@@ -1,0 +1,2 @@
+class ZeitgeistServerException(Exception):
+    pass
