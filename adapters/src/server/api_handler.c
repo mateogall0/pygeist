@@ -1,6 +1,9 @@
-#include <Python.h>
 #include "core/include/server/master.h"
+#include "core/include/server/api/socket.h"
+#include "adapters/include/server/config.h"
+#include "adapters/include/server/exceptions.h"
 #include <sys/prctl.h>
+#include <Python.h>
 
 
 PyObject*
@@ -8,22 +11,25 @@ run_zeitgeist_server_adapter(PyObject *self,
                              PyObject *args,
                              PyObject *kwargs) {
     (void)self;
-    static char *kwlist[] = {"port", "batch_size", "thread_pool_size", NULL};
+    if (ssc) {
+        PyErr_SetString(ServerAlreadyStarted, "server already initialized");
+        return (NULL);
+    }
+
+    static char *kwlist[] = {"port", "thread_pool_size", NULL};
     uint32_t server_port = 4000;
-    uint64_t batch_size = 4;
     size_t thread_pool_size = 2;
 
     if (!PyArg_ParseTupleAndKeywords(
             args, kwargs,
-            "|IKk",
+            "|Ik",
             kwlist,
             &server_port,
-            &batch_size,
             &thread_pool_size))
-        return NULL; // raise exception
+        return (NULL);
 
-    run_core_server_loop(server_port, batch_size, thread_pool_size, false);
+    run_core_server_loop(server_port, 1, thread_pool_size, false);
 
     Py_INCREF(Py_None);
-    return Py_None;
+    return (Py_None);
 }

@@ -1,5 +1,6 @@
 #include <Python.h>
 #include "adapters/include/server/api_handler.h"
+#include "adapters/include/server/exceptions.h"
 
 
 static PyMethodDef AdapterMethods[] = {
@@ -21,5 +22,9 @@ static struct PyModuleDef adaptermodule = {
 
 // Module init function (entry point for import)
 PyMODINIT_FUNC PyInit__adapter(void) {
-    return PyModule_Create(&adaptermodule);
+    PyObject *m = PyModule_Create(&adaptermodule);
+    if (!m)
+        return (NULL);
+    init_exceptions();
+    return (m);
 }
