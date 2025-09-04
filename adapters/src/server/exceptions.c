@@ -1,15 +1,31 @@
-#include <Python.h>
 #include "adapters/include/server/config.h"
 #include "adapters/include/server/exceptions.h"
+#include <stdio.h>
+#include <Python.h>
 
 
 PyObject *ServerAlreadyStarted = NULL;
+PyObject *SessionsStructureInit = NULL;
+PyObject *SessionsStructureDestruct = NULL;
+PyObject *EndpointsInit = NULL;
+
 
 void init_exceptions(void) {
     PyObject *exceptions_module = PyImport_ImportModule(ZSERVER_MODULE_NAME ".exceptions");
-    if (!exceptions_module) return;
+    if (!exceptions_module) {
+        return;
+    }
 
     ServerAlreadyStarted = PyObject_GetAttrString(exceptions_module, "ServerAlreadyStarted");
+    SessionsStructureInit = PyObject_GetAttrString(exceptions_module, "SessionsStructureInit");
+    SessionsStructureDestruct = PyObject_GetAttrString(exceptions_module, "SessionsStructureDestruct");
+    EndpointsInit = PyObject_GetAttrString(exceptions_module, "EndpointsInit");
+
+    // Done with the module
     Py_DECREF(exceptions_module);
-    if (!ServerAlreadyStarted) return;
+
+    // Validate all
+    if (!ServerAlreadyStarted || !SessionsStructureInit ||
+        !SessionsStructureDestruct || !EndpointsInit)
+        PyErr_SetString(PyExc_ImportError, "Failed to initialize custom exceptions");
 }

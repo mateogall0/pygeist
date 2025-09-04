@@ -1,10 +1,11 @@
 # Compiler and flags
 CC := gcc
 CFLAGS := -Wall -Wextra -std=gnu11 -fPIC \
-          -I$(PWD) -Icore/include \
-          $(shell python3-config --includes)
+	  -I$(PWD) -Icore/include \
+	  $(shell python3-config --includes)
 
 LDFLAGS := -shared $(shell python3-config --ldflags)
+
 
 # Source directories
 CORE_SERVER_SRC := core/src/server

@@ -3,3 +3,12 @@ class ZeitgeistServerException(Exception):
 
 class ServerAlreadyStarted(ZeitgeistServerException):
     pass
+
+class SessionsStructureInit(ZeitgeistServerException):
+    pass
+
+class SessionsStructureDestruct(ZeitgeistServerException):
+    pass
+
+class EndpointsInit(ZeitgeistServerException):
+    pass

@@ -2,7 +2,7 @@
 #define ZPYTHON_ZSERVER_CONFIG_H
 
 
-#ifndef
+#ifndef ZSERVER_SYSTEM_VERBOSE
 #define ZSERVER_SYSTEM_VERBOSE true
 #endif
 

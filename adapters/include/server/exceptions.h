@@ -4,6 +4,9 @@
 #include <Python.h>
 
 extern PyObject *ServerAlreadyStarted;
+extern PyObject *SessionsStructureInit;
+extern PyObject *SessionsStructureDestruct;
+extern PyObject *EndpointsInit;
 
 
 void init_exceptions(void);
