@@ -1,14 +1,28 @@
-from zeitgeist_server.exceptions import ServerAlreadyStarted
+from functools import wraps
+from threading import Lock
 
-def singleton_class(cls):
+
+def singleton_class(_cls=None, *, exc_cls=ValueError):
     """
-    Decorator that restricts classes of having more than one instance
+    Decorator that restricts a class to a single instance.
+    Raises `exc_cls` if an instance already exists.
     """
     instances = {}
-    def wrapper(*args, **kwargs):
-        if cls not in instances:
-            inst = cls(*args, **kwargs)
-            instances[cls] = inst
-            return inst
-        raise ServerAlreadyStarted('server already initialized')
-    return wrapper
+    lock = Lock()
+
+    def wrap(cls):
+        @wraps(cls)
+        def wrapper(*args, **kwargs):
+            with lock:
+                if cls not in instances:
+                    instances[cls] = cls(*args, **kwargs)
+                    return instances[cls]
+                raise exc_cls(f"An instance of {cls.__name__} already exists")
+        return wrapper
+
+    if _cls is None:
+        # decorator called with arguments
+        return wrap
+    else:
+        # decorator called without arguments
+        return wrap(_cls)
