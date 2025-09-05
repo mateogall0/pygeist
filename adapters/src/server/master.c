@@ -16,7 +16,7 @@ static PyMethodDef AdapterMethods[] = {
      "Initialize sessions wheel and map"},
     {"_destroy_sessions_structure",
      run_destroy_sessions_structure,
-     METH_VARARGS | METH_KEYWORDS,
+     METH_NOARGS,
      "Destroy sessions wheel and map"},
     {"_init_endpoints_list",
      run_init_endpoints_list,
@@ -24,8 +24,16 @@ static PyMethodDef AdapterMethods[] = {
      "Initialize endpoints list"},
     {"_destroy_endpoints_list",
      run_destroy_endpoints_list,
-     METH_VARARGS | METH_KEYWORDS,
+     METH_NOARGS,
      "Destroy endpoints list"},
+    {"_get_api_log",
+     run_get_api_log_requests,
+     METH_NOARGS,
+     "Get a boolean indicating if the api is logging"},
+    {"_set_api_log",
+     run_set_api_log_requests,
+     METH_VARARGS | METH_KEYWORDS,
+     "Set a boolean indicating if the api can log"},
     {NULL, NULL, 0, NULL}
 };
 
