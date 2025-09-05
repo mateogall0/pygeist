@@ -8,6 +8,7 @@ PyObject *ServerAlreadyStarted = NULL;
 PyObject *SessionsStructureInit = NULL;
 PyObject *SessionsStructureDestruct = NULL;
 PyObject *EndpointsInit = NULL;
+PyObject *EndpointsDestruct = NULL;
 
 
 void init_exceptions(void) {
@@ -20,12 +21,17 @@ void init_exceptions(void) {
     SessionsStructureInit = PyObject_GetAttrString(exceptions_module, "SessionsStructureInit");
     SessionsStructureDestruct = PyObject_GetAttrString(exceptions_module, "SessionsStructureDestruct");
     EndpointsInit = PyObject_GetAttrString(exceptions_module, "EndpointsInit");
+    EndpointsDestruct = PyObject_GetAttrString(exceptions_module, "EndpointsDestruct");
+
 
     // Done with the module
     Py_DECREF(exceptions_module);
 
     // Validate all
-    if (!ServerAlreadyStarted || !SessionsStructureInit ||
-        !SessionsStructureDestruct || !EndpointsInit)
+    if (!ServerAlreadyStarted ||
+        !SessionsStructureInit ||
+        !SessionsStructureDestruct ||
+        !EndpointsInit ||
+        !EndpointsDestruct)
         PyErr_SetString(PyExc_ImportError, "Failed to initialize custom exceptions");
 }

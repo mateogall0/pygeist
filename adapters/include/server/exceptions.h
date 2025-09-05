@@ -7,6 +7,7 @@ extern PyObject *ServerAlreadyStarted;
 extern PyObject *SessionsStructureInit;
 extern PyObject *SessionsStructureDestruct;
 extern PyObject *EndpointsInit;
+extern PyObject *EndpointsDestruct;
 
 
 void init_exceptions(void);

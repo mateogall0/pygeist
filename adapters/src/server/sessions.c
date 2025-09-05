@@ -17,20 +17,20 @@ run_initialize_sessions_structure(PyObject *self,
         return (NULL);
     }
 
-    static char *kwlist[] = {"idle_timout", "map_size", NULL};
-    time_t idle_timout = 300;
+    static char *kwlist[] = {"idle_timeout", "map_size", NULL};
+    time_t idle_timeout = 300;
     size_t map_size = 512;
 
     if (!PyArg_ParseTupleAndKeywords(
             args, kwargs,
             "|II",
             kwlist,
-            &idle_timout,
+            &idle_timeout,
             &map_size))
         return (NULL);
 
 
-    initialize_sessions_structure(idle_timout, map_size);
+    initialize_sessions_structure(idle_timeout, map_size);
     if (!connected_sessions_map || !connected_sessions_wheel) {
         PyErr_SetString(SessionsStructureInit, "sessions structure didn't start correctly");
         return (NULL);
@@ -49,6 +49,7 @@ run_destroy_sessions_structure(PyObject *self) {
         return (NULL);
     }
 
+    destroy_connected_sessions_map();
     destroy_connected_sessions_wheel();
 
     Py_INCREF(Py_None);

@@ -25,7 +25,7 @@ PyObject*
 run_destroy_endpoints_list(PyObject *self) {
     (void)self;
     if (!endpoints) {
-        PyErr_SetString(SessionsStructureDestruct,
+        PyErr_SetString(EndpointsDestruct,
                         "endpoints list is not initialized");
         return (NULL);
     }
