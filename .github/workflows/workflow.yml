@@ -15,7 +15,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: true 
+          submodules: true
+          token: ${{ secrets.GH_SECRET }}
 
       - name: Set up Python
         uses: actions/setup-python@v4
