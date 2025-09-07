@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from zeitgeist_server._adapter import
+
 
 
 class AServer(ABC):

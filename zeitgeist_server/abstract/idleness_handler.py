@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class AIdlenessHandler(abc):
+class AIdlenessHandler(ABC):
     def __init__(self, idleness_max_time: int) -> None:
         self.idleness_max_time = idleness_max_time
 
@@ -9,7 +9,7 @@ class AIdlenessHandler(abc):
     def idleness_max_time(self) -> int:
         return self._idleness_max_time
 
-    @setter.idleness_max_time
+    @idleness_max_time.setter
     def idleness_max_time(self, value: int) -> None:
         if (not isinstance(value, int), value <= 0):
             raise TypeError(

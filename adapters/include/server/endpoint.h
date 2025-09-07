@@ -16,4 +16,7 @@ run_create_append_endpoint(PyObject *self,
                            PyObject *args,
                            PyObject *kwargs);
 
+PyObject*
+run_print_all_endpoints(PyObject *self);
+
 #endif
