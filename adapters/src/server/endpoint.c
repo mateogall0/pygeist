@@ -1,6 +1,8 @@
 #include "adapters/include/server/exceptions.h"
+#include "adapters/include/server/classes.h"
 #include "core/include/server/api/endpoint.h"
 #include <Python.h>
+
 
 PyObject*
 run_init_endpoints_list(PyObject *self) {
@@ -20,7 +22,6 @@ run_init_endpoints_list(PyObject *self) {
     return (Py_None);
 }
 
-
 PyObject*
 run_destroy_endpoints_list(PyObject *self) {
     (void)self;
@@ -30,6 +31,91 @@ run_destroy_endpoints_list(PyObject *self) {
         return (NULL);
     }
     destroy_endpoints();
+
+    Py_INCREF(Py_None);
+    return (Py_None);
+}
+
+char *py_handler_wrapper(request_t *req, PyObject *py_func) {
+    PyGILState_STATE gstate = PyGILState_Ensure();
+
+    // Wrap raw C pointer in PyCapsule
+    PyObject *capsule = PyCapsule_New((void *)req, "request_t", NULL);
+    if (!capsule) {
+        PyGILState_Release(gstate);
+        return NULL;
+    }
+
+    // Call Python function with the capsule
+    PyObject *result = PyObject_CallFunctionObjArgs(py_func, capsule, NULL);
+    Py_DECREF(capsule);
+
+    char *ret = NULL;
+    if (result && PyUnicode_Check(result)) {
+        const char *tmp = PyUnicode_AsUTF8(result);
+        if (tmp) ret = strdup(tmp);  // dynamically allocate
+        Py_DECREF(result);
+    }
+
+    PyGILState_Release(gstate);
+    return ret;
+}
+
+
+char *_handler(request_t *r) {
+    PyObject *req_inst_args = Py_BuildValue("(is)",
+                                            r->method,
+                                            r->target);
+    PyObject *req_inst = PyObject_CallObject(RequestClass, req_inst_args);
+    Py_DECREF(req_inst_args);
+    Py_DECREF(RequestClass);
+
+    if (!req_inst) return NULL;
+    PyObject *args = PyTuple_New(1);
+    Py_INCREF(req_inst);
+    PyTuple_SetItem(args, 0, req_inst);
+    PyObject_CallObject((PyObject *)r->endpoint->meta, args);
+    return (NULL);
+}
+
+PyObject*
+run_create_append_endpoint(PyObject *self,
+                           PyObject *args,
+                           PyObject *kwargs) {
+    (void)self;
+    if (endpoints) {
+        PyErr_SetString(EndpointsInit,
+                        "endpoints list is not initialized");
+        return (NULL);
+    }
+
+
+    static char *kwlist[] = {"method", "target", "handler", NULL};
+    int method;
+    PyObject *py_handler;
+    char *target = NULL;
+
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwargs,
+            "isO",
+            kwlist,
+            &method,
+            &target,
+            &py_handler))
+        return (NULL);
+    if (!PyCallable_Check(py_handler)) {
+        PyErr_SetString(PyExc_TypeError, "handler must be a callable");
+        return NULL;
+    }
+
+    if (method < 0 || method >= METHODS_COUNT) {
+        PyErr_SetString(PyExc_ValueError, "invalid method enum value");
+        return NULL;
+    }
+
+    endpoint_t *e = set_endpoint_va(3, method, target, _handler);
+    Py_INCREF(py_handler);
+    e->meta = (uintptr_t)py_handler;
 
     Py_INCREF(Py_None);
     return (Py_None);

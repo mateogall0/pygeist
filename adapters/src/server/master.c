@@ -2,6 +2,8 @@
 #include "adapters/include/server/sessions.h"
 #include "adapters/include/server/exceptions.h"
 #include "adapters/include/server/endpoint.h"
+#include "adapters/include/server/classes.h"
+#include "adapters/include/server/const.h"
 #include <Python.h>
 
 
@@ -34,6 +36,10 @@ static PyMethodDef AdapterMethods[] = {
      run_set_api_log_requests,
      METH_VARARGS | METH_KEYWORDS,
      "Set a boolean indicating if the api can log"},
+    {"_create_endpoint",
+     run_create_append_endpoint,
+     METH_VARARGS | METH_KEYWORDS,
+     "Create an endpoint and append it to the endpoints list"},
     {NULL, NULL, 0, NULL}
 };
 
@@ -52,5 +58,7 @@ PyMODINIT_FUNC PyInit__adapter(void) {
     if (!m)
         return (NULL);
     init_exceptions();
+    import_classes();
+    init_consts(m);
     return (m);
 }
