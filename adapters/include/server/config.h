@@ -3,10 +3,14 @@
 
 
 #ifndef ZSERVER_SYSTEM_VERBOSE
-#define ZSERVER_SYSTEM_VERBOSE true
+#define ZSERVER_SYSTEM_VERBOSE false
 #endif
 
 #define ZSERVER_MODULE_NAME "zeitgeist_server"
+
+#ifndef ZSERVER_SYSTEM_BATCH_SIZE
+#define ZSERVER_SYSTEM_BATCH_SIZE 1
+#endif
 
 
 #endif

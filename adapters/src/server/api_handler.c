@@ -30,7 +30,10 @@ run_zeitgeist_server_adapter(PyObject *self,
             &thread_pool_size))
         return (NULL);
 
-    run_core_server_loop(server_port, 1, thread_pool_size, ZSERVER_SYSTEM_VERBOSE);
+    run_core_server_loop(server_port,
+                         ZSERVER_SYSTEM_BATCH_SIZE,
+                         thread_pool_size,
+                         ZSERVER_SYSTEM_VERBOSE);
 
     Py_INCREF(Py_None);
     return (Py_None);

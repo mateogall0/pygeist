@@ -144,9 +144,11 @@ run_create_append_endpoint(PyObject *self,
                            PyObject *kwargs) {
     (void)self;
     if (!endpoints) {
-        PyErr_SetString(EndpointsInit,
-                        "endpoints list is not initialized");
-        return (NULL);
+        if (!init_endpoints_list()) {
+            PyErr_SetString(EndpointsInit,
+                            "endpoints list couldn't be initialized");
+            return (NULL);
+        }
     }
 
     static char *kwlist[] = {"method", "target", "handler", NULL};

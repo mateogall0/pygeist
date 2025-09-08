@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 
 
-
 class AServer(ABC):
     def __init__(self,
                  port: int = 4000,
