@@ -27,27 +27,57 @@ _handle_input_py(PyObject *self,
 void _handle_input(int client_fd) {
     PyGILState_STATE gstate = PyGILState_Ensure();
 
+    // Import our Python helper module that defines run()
+    PyObject *helpers = PyImport_ImportModule(ZSERVER_MODULE_NAME ".concurrency.helpers");
+    if (!helpers) {
+        PyErr_Print();
+        PyGILState_Release(gstate);
+        return;
+    }
+
+    PyObject *run_func = PyObject_GetAttrString(helpers, "run_handler");
+    Py_DECREF(helpers);
+    if (!run_func) {
+        PyErr_Print();
+        PyGILState_Release(gstate);
+        return;
+    }
+
     PyMethodDef method_def = {
         "_handle_input_py_temp",
         _handle_input_py,
         METH_VARARGS,
         NULL
     };
-    PyObject *py_func = PyCFunction_New(&method_def, NULL);
 
-    PyObject *args_tuple = Py_BuildValue("(i)", client_fd);
-
-    PyObject *res = PyObject_CallObject(py_func, args_tuple);
-    if (!res) {
-        PyErr_Print();
+    PyObject *py_handler = PyCFunction_New(&method_def, NULL);
+    if (!py_handler) {
+        PyGILState_Release(gstate);
+        return;
     }
 
-    Py_XDECREF(res);
-    Py_DECREF(args_tuple);
-    Py_DECREF(py_func);
+    // Then pack it into args
+    PyObject *args = PyTuple_Pack(2, py_handler, PyLong_FromLong(client_fd));
+    Py_DECREF(py_handler);
+    if (!args) {
+        PyErr_Print();
+        Py_DECREF(run_func);
+        PyGILState_Release(gstate);
+        return;
+    }
+
+    PyObject *res = PyObject_CallObject(run_func, args);
+    Py_DECREF(args);
+    Py_DECREF(run_func);
+
+    if (!res)
+        PyErr_Print();
+    else
+        Py_XDECREF(res);
 
     PyGILState_Release(gstate);
 }
+
 
 PyObject*
 run_zeitgeist_server_adapter(PyObject *self,

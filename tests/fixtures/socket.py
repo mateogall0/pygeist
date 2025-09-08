@@ -9,7 +9,7 @@ import socket
 
 def _build_example(port, ready_event):
     r = Router('/get-1515')
-    def handler(req: Request):
+    async def handler(req: Request):
         return 1515
 
     r.get('/', handler)

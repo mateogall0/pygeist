@@ -62,10 +62,10 @@ char *py_handler_wrapper(request_t *req, PyObject *py_func) {
 }
 
 char *_handler(request_t *r) {
-    PyGILState_STATE gstate = PyGILState_Ensure();  // acquire GIL
+    PyGILState_STATE gstate = PyGILState_Ensure();
     char *result_cstr = NULL;
 
-
+    // Build Python Request instance
     PyObject *req_inst_args = Py_BuildValue("(is)", r->method, r->target);
     if (!req_inst_args)
         goto fail;
@@ -92,33 +92,55 @@ char *_handler(request_t *r) {
     PyObject *handler = (PyObject *)r->endpoint->meta;
     PyObject *result = NULL;
 
-    if (PyCoro_CheckExact(handler)) {
-        // async function: call with args first to get coroutine
+    // Import inspect module to detect async functions
+    PyObject *inspect = PyImport_ImportModule("inspect");
+    if (!inspect) {
+        PyErr_Print();
+        goto fail_args;
+    }
+
+    PyObject *is_coro_func = PyObject_CallMethod(inspect, "iscoroutinefunction", "O", handler);
+    Py_DECREF(inspect);
+    if (!is_coro_func) {
+        PyErr_Print();
+        goto fail_args;
+    }
+
+    int async_func = PyObject_IsTrue(is_coro_func);
+    Py_DECREF(is_coro_func);
+
+    if (async_func) {
+        // async function: create coroutine
         PyObject *coro = PyObject_CallObject(handler, args);
         if (!coro) {
             PyErr_Print();
-            goto fail;
+            goto fail_args;
         }
 
-        PyObject *asyncio = PyImport_ImportModule("asyncio"); // cached
+        PyObject *asyncio = PyImport_ImportModule("asyncio");
         if (!asyncio) {
             Py_DECREF(coro);
-            goto fail;
+            PyErr_Print();
+            goto fail_args;
         }
 
         PyObject *loop = PyObject_CallMethod(asyncio, "get_event_loop", NULL);
         Py_DECREF(asyncio);
         if (!loop) {
             Py_DECREF(coro);
-            goto fail;
+            PyErr_Print();
+            goto fail_args;
         }
 
         result = PyObject_CallMethod(loop, "run_until_complete", "O", coro);
         Py_DECREF(loop);
         Py_DECREF(coro);
-    } else // sync function: call directly with args
+    } else {
+        // sync function: call directly
         result = PyObject_CallObject(handler, args);
+    }
 
+fail_args:
     Py_DECREF(args);
     Py_DECREF(req_inst);
 
@@ -130,19 +152,20 @@ char *_handler(request_t *r) {
     // convert result to C string
     PyObject *str_obj = PyObject_Str(result);
     Py_DECREF(result);
-    if (!str_obj) goto fail;
+    if (!str_obj)
+        goto fail;
 
     const char *tmp = PyUnicode_AsUTF8(str_obj);
     if (tmp)
-        result_cstr = strdup(tmp);  // allocate copy for C
+        result_cstr = strdup(tmp);
     Py_DECREF(str_obj);
 
     PyGILState_Release(gstate);
-    return (result_cstr);
+    return result_cstr;
 
 fail:
     PyGILState_Release(gstate);
-    return (NULL);
+    return NULL;
 }
 
 PyObject*
