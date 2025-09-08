@@ -7,6 +7,9 @@
 #include <Python.h>
 
 
+PyObject *global_executor = NULL;
+
+
 static PyMethodDef AdapterMethods[] = {
     {"_run_server",
      run_zeitgeist_server_adapter,
@@ -51,8 +54,8 @@ static PyMethodDef AdapterMethods[] = {
 static struct PyModuleDef adaptermodule = {
     PyModuleDef_HEAD_INIT,
     "_adapter",
-    "Example adapter",  // docstring
-    -1,                 // per-interpreter state (or -1 if not needed)
+    "Zeitgeist server adapter",
+    -1,
     AdapterMethods
 };
 
@@ -64,5 +67,26 @@ PyMODINIT_FUNC PyInit__adapter(void) {
     init_exceptions();
     import_classes();
     init_consts(m);
+    int max_workers = 2;
+    PyObject *concurrent = PyImport_ImportModule("concurrent.futures");
+    if (!concurrent) return NULL;
+
+    PyObject *executor_class = PyObject_GetAttrString(concurrent, "ThreadPoolExecutor");
+    if (!executor_class) return NULL;
+
+    global_executor = PyObject_CallFunction(executor_class, "(i)", max_workers);
+    if (!global_executor) {
+        PyErr_Print();
+        Py_DECREF(executor_class);
+        Py_DECREF(concurrent);
+        return NULL;
+    }
+
+
+    Py_XINCREF(global_executor);
+
+    Py_DECREF(executor_class);
+    Py_DECREF(concurrent);
+
     return (m);
 }

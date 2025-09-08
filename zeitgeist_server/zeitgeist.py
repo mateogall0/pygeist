@@ -38,4 +38,7 @@ class ZeitgeistAPI:
 
     def run(self) -> None:
         api_master = self._compose()
+        print(f'Starting server on port {self.port}...')
+        print('press Ctrl+C to stop it')
         self._run(api_master)
+        print('\nstopped')

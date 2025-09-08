@@ -6,7 +6,6 @@ CFLAGS := -Wall -Wextra -std=gnu11 -fPIC \
 
 LDFLAGS := -shared $(shell python3-config --ldflags)
 
-
 # Source directories
 CORE_SERVER_SRC := core/src/server
 CORE_COMMON_SRC := core/src/common

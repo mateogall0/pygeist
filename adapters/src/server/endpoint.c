@@ -65,9 +65,16 @@ char *_handler(request_t *r) {
     PyGILState_STATE gstate = PyGILState_Ensure();  // acquire GIL
     char *result_cstr = NULL;
 
+
     PyObject *req_inst_args = Py_BuildValue("(is)", r->method, r->target);
     if (!req_inst_args)
         goto fail;
+
+    if (!RequestClass) {
+        PyErr_SetString(PyExc_RuntimeError, "RequestClass not initialized!");
+        PyGILState_Release(gstate);
+        return NULL;
+    }
 
     PyObject *req_inst = PyObject_CallObject(RequestClass, req_inst_args);
     Py_DECREF(req_inst_args);
