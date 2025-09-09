@@ -8,11 +8,11 @@ import socket
 
 
 def _build_example(port, ready_event):
-    r = Router('/get-1515')
+    r = Router('/')
     async def handler(req: Request):
         return 1515
 
-    r.get('/', handler)
+    r.get('/get-1515', handler)
     api = ZeitgeistAPI(port=port)
     ready_event.set()
     api.run()

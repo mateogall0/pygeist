@@ -30,9 +30,13 @@ class Router:
                         *ag,
                         **kw,
                         ) -> None:
+        final_target = self.prefix
+        if final_target[-1] == '/':
+            final_target = final_target[:-1]
+        final_target +=  target
         _adapter._create_endpoint(
             method=method,
-            target=self.prefix + target,
+            target=final_target,
             handler=handler,
             *ag,
             **kw
