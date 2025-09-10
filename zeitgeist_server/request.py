@@ -1,10 +1,11 @@
 class Request:
     def __init__(self,
+                 method=None,
+                 target=None,
+                 body=None,
                  headers=None,
                  content_type=None,
-                 body=None,
-                 method=None,
-                 target=None):
+                 ) -> None:
         self.content_type = content_type
         self.headers = headers
         self.body = body

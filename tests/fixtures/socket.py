@@ -9,14 +9,20 @@ import socket
 
 def _build_example(port, ready_event):
     r = Router('/')
-    async def handler(req: Request):
+    async def handler1515(req: Request):
         return 1515
 
-    r.get('/get-1515', handler)
+    async def handlerpow(req: Request):
+        try:
+            return int(req.body) ** 2
+        except:
+            return 'error'
+
+    r.get('/get-1515', handler1515)
+    r.get('/get-pow', handlerpow)
     api = ZeitgeistAPI(port=port)
     ready_event.set()
     api.run()
-
 
 def _find_free_port():
     s = socket.socket()
@@ -24,7 +30,6 @@ def _find_free_port():
     port = s.getsockname()[1]
     s.close()
     return port
-
 
 @pytest.fixture
 def example_server() -> int:
