@@ -10,6 +10,9 @@ class SessionsStructureInit(ZeitgeistServerException):
 class SessionsStructureDestruct(ZeitgeistServerException):
     pass
 
+class SessionCreation(ZeitgeistServerException):
+    pass
+
 class EndpointsInit(ZeitgeistServerException):
     pass
 

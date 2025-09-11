@@ -9,7 +9,7 @@ PyObject *SessionsStructureInit = NULL;
 PyObject *SessionsStructureDestruct = NULL;
 PyObject *EndpointsInit = NULL;
 PyObject *EndpointsDestruct = NULL;
-
+PyObject *SessionCreation = NULL;
 
 void init_exceptions(void) {
     PyObject *exceptions_module = PyImport_ImportModule(ZSERVER_MODULE_NAME ".exceptions");
@@ -20,8 +20,10 @@ void init_exceptions(void) {
     ServerAlreadyStarted = PyObject_GetAttrString(exceptions_module, "ServerAlreadyStarted");
     SessionsStructureInit = PyObject_GetAttrString(exceptions_module, "SessionsStructureInit");
     SessionsStructureDestruct = PyObject_GetAttrString(exceptions_module, "SessionsStructureDestruct");
+    SessionCreation = PyObject_GetAttrString(exceptions_module, "SessionCreation");
     EndpointsInit = PyObject_GetAttrString(exceptions_module, "EndpointsInit");
     EndpointsDestruct = PyObject_GetAttrString(exceptions_module, "EndpointsDestruct");
+
 
 
     // Done with the module
@@ -32,6 +34,7 @@ void init_exceptions(void) {
         !SessionsStructureInit ||
         !SessionsStructureDestruct ||
         !EndpointsInit ||
-        !EndpointsDestruct)
+        !EndpointsDestruct ||
+        !SessionCreation)
         PyErr_SetString(PyExc_ImportError, "Failed to initialize custom exceptions");
 }

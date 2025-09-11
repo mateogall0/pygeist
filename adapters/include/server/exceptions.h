@@ -8,7 +8,7 @@ extern PyObject *SessionsStructureInit;
 extern PyObject *SessionsStructureDestruct;
 extern PyObject *EndpointsInit;
 extern PyObject *EndpointsDestruct;
-
+extern PyObject *SessionCreation;
 
 void init_exceptions(void);
 
