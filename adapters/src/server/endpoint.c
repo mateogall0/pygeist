@@ -66,12 +66,11 @@ char *_handler(request_t *r) {
     char *result_cstr = NULL;
 
     // Build Python Request instance
-    PyObject *req_inst_args = Py_BuildValue("(issss)",
+    PyObject *req_inst_args = Py_BuildValue("(isss)",
                                             r->method,
                                             r->target,
                                             r->body,
-                                            r->headers,
-                                            r->content_type);
+                                            r->headers);
     if (!req_inst_args)
         goto fail;
 

@@ -13,6 +13,7 @@ from tests.fixtures.socket import example_server
                              ('GET', '/get-pow', 'something', b'error'),
                              ('GET', '/get-notnonexistent', '', b'404 Resource not found'),
                              ('POST', '/get-1515', '', b'405 Method not allowed'),
+                             ('this', 'is', 'invalid', b'400 Bad request'),
                          ])
 def test_server_socket(example_server, method_str, target, body, expected):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
