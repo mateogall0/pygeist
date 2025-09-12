@@ -1,0 +1,9 @@
+# Include all Python files in the server package
+recursive-include zeitgeist_server *.py
+
+# Include compiled extensions
+recursive-include zeitgeist_server *.so
+
+# Include docs and metadata
+include README.md
+include LICENSE
