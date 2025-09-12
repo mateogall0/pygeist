@@ -1,39 +1,11 @@
-name: Workflow
+name: Publish
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  release:
-    types: [published]
+    tags:
+      - '*'
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          submodules: true
-          token: ${{ secrets.GH_SECRET }}
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: pip install -r requirements-dev.txt
-
-      - name: Build
-        run: make
-
-      - name: Run tests
-        run: pytest
-
   publish:
     name: "Publish release"
     needs: test
