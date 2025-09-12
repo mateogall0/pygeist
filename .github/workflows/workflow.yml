@@ -5,6 +5,8 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  release:
+    types: [published]
 
 jobs:
   test:
@@ -13,7 +15,7 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
           token: ${{ secrets.GH_SECRET }}
@@ -31,3 +33,34 @@ jobs:
 
       - name: Run tests
         run: pytest
+
+  publish:
+    name: "Publish release"
+    needs: test
+    if: github.event_name == 'release' 
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: true
+          token: ${{ secrets.GH_SECRET }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: pip install build
+
+      - name: Build native extensions
+        run: make
+
+      - name: Build package
+        run: python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
