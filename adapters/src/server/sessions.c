@@ -60,7 +60,7 @@ run_destroy_sessions_structure(PyObject *self) {
 PyObject*
 run_set_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
     (void)self;
-    if (connected_sessions_map || connected_sessions_wheel) {
+    if (!connected_sessions_map || !connected_sessions_wheel) {
         PyErr_SetString(SessionsStructureInit, "sessions structure not initialized");
         return (NULL);
     }
@@ -90,7 +90,7 @@ run_set_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
 PyObject*
 run_get_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
     (void)self;
-    if (connected_sessions_map || connected_sessions_wheel) {
+    if (!connected_sessions_map || !connected_sessions_wheel) {
         PyErr_SetString(SessionsStructureInit, "sessions structure not initialized");
         return (NULL);
     }
@@ -119,7 +119,7 @@ run_get_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
 PyObject *
 run_send_unrequested_payload(PyObject *self, PyObject *args, PyObject *kwargs) {
     (void)self;
-    if (connected_sessions_map || connected_sessions_wheel) {
+    if (!connected_sessions_map || !connected_sessions_wheel) {
         PyErr_SetString(SessionsStructureInit, "sessions structure not initialized");
         return (NULL);
     }

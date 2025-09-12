@@ -1,13 +1,14 @@
 from zeitgeist_server.zeitgeist import ZeitgeistAPI
 from zeitgeist_server.router import Router
 from zeitgeist_server.request import Request
+from zeitgeist_server.sessions import send_payload
 import pytest
-import time
 import multiprocessing
 import socket
 
 
 def _build_example(port, ready_event):
+    last_requested_id = None
     r = Router('/')
     async def handler1515(req: Request):
         return 1515
@@ -18,8 +19,16 @@ def _build_example(port, ready_event):
         except:
             return 'error'
 
+    async def broadcast(req: Request):
+        nonlocal last_requested_id
+        if last_requested_id is not None:
+            send_payload(last_requested_id, req.body)
+        last_requested_id = req.client_key
+        return 'sending stuff'
+
     r.get('/get-1515', handler1515)
     r.get('/get-pow', handlerpow)
+    r.post('/post-broadcast', broadcast)
     api = ZeitgeistAPI(port=port)
     ready_event.set()
     api.run()
