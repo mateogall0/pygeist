@@ -1,3 +1,4 @@
+#define PY_SSIZE_T_CLEAN
 #include "core/include/server/master.h"
 #include "core/include/server/sessions/map.h"
 #include "core/include/server/sessions/wheel.h"
@@ -81,11 +82,14 @@ run_set_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
         PyErr_SetString(SessionCreation, "session doesn't exist");
         return (NULL);
     }
-    Py_INCREF(value);
-    session->meta = (uintptr_t)value;
+
+    PyObject *old = (PyObject*)session->meta;
+    if (old)
+        Py_DECREF(old);
 
     Py_INCREF(value);
-    return value;
+    session->meta = (uintptr_t)value;
+    return (value);
 }
 
 PyObject*
