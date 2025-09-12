@@ -81,6 +81,7 @@ run_set_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
         PyErr_SetString(SessionCreation, "session doesn't exist");
         return (NULL);
     }
+    Py_INCREF(value);
     session->meta = (uintptr_t)value;
 
     Py_INCREF(value);
@@ -110,10 +111,15 @@ run_get_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
         PyErr_SetString(SessionCreation, "session doesn't exist");
         return (NULL);
     }
-    PyObject *value = (PyObject *)session->meta;
+    PyObject *value = (PyObject*)session->meta;
+    if (!value) {
+        Py_INCREF(Py_None);
+        return (Py_None);
+    }
 
     Py_INCREF(value);
-    return (value);
+    return value;
+
 }
 
 PyObject *
