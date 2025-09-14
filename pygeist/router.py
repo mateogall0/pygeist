@@ -1,7 +1,7 @@
-from zeitgeist_server import _adapter
+from pygeist import _adapter
 from typing import Callable
-from zeitgeist_server.abstract.endpoint import AEndpoints
-from zeitgeist_server.exceptions import EndpointsDestruct
+from pygeist.abstract.endpoint import AEndpoints
+from pygeist.exceptions import EndpointsDestruct
 
 
 class Endpoints(AEndpoints):

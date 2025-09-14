@@ -1,7 +1,7 @@
-from zeitgeist_server.utils.singleton import singleton_class
-from zeitgeist_server.abstract.api import AServer
-from zeitgeist_server.abstract.idleness_handler import AIdlenessHandler
-from zeitgeist_server.abstract.endpoint import AEndpoints
+from pygeist.utils.singleton import singleton_class
+from pygeist.abstract.api import AServer
+from pygeist.abstract.idleness_handler import AIdlenessHandler
+from pygeist.abstract.endpoint import AEndpoints
 
 
 @singleton_class

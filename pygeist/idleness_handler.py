@@ -1,5 +1,5 @@
-from zeitgeist_server.abstract.idleness_handler import AIdlenessHandler
-from zeitgeist_server import _adapter
+from pygeist.abstract.idleness_handler import AIdlenessHandler
+from pygeist import _adapter
 
 
 class IdlenessHandler(AIdlenessHandler):

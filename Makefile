@@ -12,7 +12,7 @@ CORE_COMMON_SRC := core/src/common
 ADAPTER_SERVER_SRC := adapters/src/server
 
 # Target Python module
-ADAPTER_TARGET := zeitgeist_server
+ADAPTER_TARGET := pygeist
 TARGET_NAME := _adapter.so
 
 # Build directory for object files

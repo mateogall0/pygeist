@@ -1,9 +1,8 @@
-from zeitgeist_server import idleness_handler
-from zeitgeist_server.router import Endpoints
-from zeitgeist_server.utils.singleton import singleton_class
-from zeitgeist_server.registry import (Server,
-                                       IdlenessHandler,
-                                       APIMaster,)
+from pygeist.router import Endpoints
+from pygeist.utils.singleton import singleton_class
+from pygeist.registry import (Server,
+                              IdlenessHandler,
+                              APIMaster,)
 
 
 @singleton_class

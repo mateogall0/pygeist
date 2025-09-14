@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="pygeist",
     version="0.1.3",
-    packages=find_packages(include=["zeitgeist_server*"]),
+    packages=find_packages(include=["pygeist*"]),
     python_requires=">=3.8",
     install_requires=[],
     include_package_data=True,

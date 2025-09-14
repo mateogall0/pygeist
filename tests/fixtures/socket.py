@@ -1,7 +1,7 @@
-from zeitgeist_server.zeitgeist import ZeitgeistAPI
-from zeitgeist_server.router import Router
-from zeitgeist_server.request import Request
-from zeitgeist_server.sessions import send_payload
+from pygeist.zeitgeist import ZeitgeistAPI
+from pygeist.router import Router
+from pygeist.request import Request
+from pygeist.sessions import send_payload
 import pytest
 import multiprocessing
 import socket

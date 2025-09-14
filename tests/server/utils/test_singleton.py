@@ -1,5 +1,5 @@
-from zeitgeist_server.utils.singleton import singleton_class
-from zeitgeist_server.exceptions import ServerAlreadyStarted
+from pygeist.utils.singleton import singleton_class
+from pygeist.exceptions import ServerAlreadyStarted
 import pytest
 
 

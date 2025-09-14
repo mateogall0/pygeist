@@ -1,4 +1,4 @@
-from zeitgeist_server import _adapter
+from pygeist import _adapter
 
 
 def set_session_data(key: int, value):

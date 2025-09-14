@@ -6,7 +6,7 @@
 #define ZSERVER_SYSTEM_VERBOSE false
 #endif
 
-#define ZSERVER_MODULE_NAME "zeitgeist_server"
+#define ZSERVER_MODULE_NAME "pygeist"
 
 #ifndef ZSERVER_SYSTEM_BATCH_SIZE
 #define ZSERVER_SYSTEM_BATCH_SIZE 1

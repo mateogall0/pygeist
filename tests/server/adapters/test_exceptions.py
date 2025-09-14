@@ -1,5 +1,5 @@
-from zeitgeist_server import _adapter
-from zeitgeist_server.exceptions import (SessionsStructureInit,
+from pygeist import _adapter
+from pygeist.exceptions import (SessionsStructureInit,
                                          EndpointsInit,
                                          EndpointsDestruct,)
 import pytest

@@ -1,4 +1,4 @@
-from zeitgeist_server import _adapter
+from pygeist import _adapter
 
 
 def test_get_logger_value():

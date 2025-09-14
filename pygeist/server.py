@@ -1,7 +1,7 @@
-from zeitgeist_server.utils.singleton import singleton_class
-from zeitgeist_server.abstract.api import AServer
-from zeitgeist_server import _adapter
-from zeitgeist_server.exceptions import ServerAlreadyStarted
+from pygeist.utils.singleton import singleton_class
+from pygeist.abstract.api import AServer
+from pygeist import _adapter
+from pygeist.exceptions import ServerAlreadyStarted
 
 
 @singleton_class(exc_cls=ServerAlreadyStarted)
