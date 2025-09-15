@@ -1,5 +1,6 @@
 #include "adapters/include/server/exceptions.h"
 #include "adapters/include/server/classes.h"
+#include "adapters/include/server/config.h"
 #include "core/include/server/api/endpoint.h"
 #include <Python.h>
 
@@ -62,7 +63,6 @@ char *py_handler_wrapper(request_t *req, PyObject *py_func) {
 }
 
 char *_handler(request_t *r) {
-    PyGILState_STATE gstate = PyGILState_Ensure();
     char *result_cstr = NULL;
 
     // Build Python Request instance
@@ -75,9 +75,10 @@ char *_handler(request_t *r) {
     if (!req_inst_args)
         goto fail;
 
+
     if (!RequestClass) {
         PyErr_SetString(PyExc_RuntimeError, "RequestClass not initialized!");
-        PyGILState_Release(gstate);
+        /* PyGILState_Release(gstate); */
         return NULL;
     }
 
@@ -123,23 +124,28 @@ char *_handler(request_t *r) {
         }
 
         PyObject *asyncio = PyImport_ImportModule("asyncio");
-        if (!asyncio) {
-            Py_DECREF(coro);
-            PyErr_Print();
-            goto fail_args;
-        }
-
+        /* PyObject *loopmod = PyImport_ImportModule(ZSERVER_MODULE_NAME ".concurrency.boot"); */
         PyObject *loop = PyObject_CallMethod(asyncio, "get_event_loop", NULL);
-        Py_DECREF(asyncio);
-        if (!loop) {
-            Py_DECREF(coro);
+
+        PyObject *future = PyObject_CallMethod(loop,
+                                               "run_until_complete",
+                                               "O",
+                                               coro
+                                               );
+        Py_XDECREF(coro);
+        Py_XDECREF(asyncio);
+        /* Py_XDECREF(loopmod); */
+        Py_XDECREF(loop);
+
+        if (!future) {
             PyErr_Print();
             goto fail_args;
         }
+        Py_XDECREF(future);  // discard result
 
-        result = PyObject_CallMethod(loop, "run_until_complete", "O", coro);
-        Py_DECREF(loop);
-        Py_DECREF(coro);
+        Py_XDECREF(args);
+        Py_XDECREF(req_inst);
+        return (NULL);
     } else {
         // sync function: call directly
         result = PyObject_CallObject(handler, args);
@@ -165,11 +171,11 @@ fail_args:
         result_cstr = strdup(tmp);
     Py_DECREF(str_obj);
 
-    PyGILState_Release(gstate);
-    return result_cstr;
+    /* PyGILState_Release(gstate); */
+    return (result_cstr);
 
 fail:
-    PyGILState_Release(gstate);
+    /* PyGILState_Release(gstate); */
     return NULL;
 }
 
@@ -209,7 +215,7 @@ run_create_append_endpoint(PyObject *self,
         return NULL;
     }
 
-    endpoint_t *e = set_endpoint_va(3, method, target, _handler);
+    endpoint_t *e = set_endpoint_va(4, method, target, _handler, true);
     Py_INCREF(py_handler);
     e->meta = (uintptr_t)py_handler;
 
