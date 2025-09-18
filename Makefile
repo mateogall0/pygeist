@@ -4,6 +4,10 @@ CFLAGS := -Wall -Wextra -std=gnu11 -fPIC \
 	  -I$(PWD) -Icore/include \
 	  $(shell python3-config --includes)
 
+ifeq ($(DEBUG),1)
+    CFLAGS += -g -DDEBUG
+endif
+
 LDFLAGS := -shared $(shell python3-config --ldflags)
 
 # Source directories

@@ -63,6 +63,7 @@ char *py_handler_wrapper(request_t *req, PyObject *py_func) {
 }
 
 char *_handler(request_t *r) {
+    PyGILState_STATE gstate = PyGILState_Ensure();
     char *result_cstr = NULL;
 
     // Build Python Request instance
@@ -78,8 +79,7 @@ char *_handler(request_t *r) {
 
     if (!RequestClass) {
         PyErr_SetString(PyExc_RuntimeError, "RequestClass not initialized!");
-        /* PyGILState_Release(gstate); */
-        return NULL;
+        goto fail;
     }
 
     PyObject *req_inst = PyObject_CallObject(RequestClass, req_inst_args);
@@ -122,30 +122,24 @@ char *_handler(request_t *r) {
             PyErr_Print();
             goto fail_args;
         }
-
-        PyObject *asyncio = PyImport_ImportModule("asyncio");
-        /* PyObject *loopmod = PyImport_ImportModule(ZSERVER_MODULE_NAME ".concurrency.boot"); */
-        PyObject *loop = PyObject_CallMethod(asyncio, "get_event_loop", NULL);
-
-        PyObject *future = PyObject_CallMethod(loop,
-                                               "run_until_complete",
-                                               "O",
-                                               coro
-                                               );
-        Py_XDECREF(coro);
-        Py_XDECREF(asyncio);
-        /* Py_XDECREF(loopmod); */
-        Py_XDECREF(loop);
-
-        if (!future) {
+        PyObject *queue_helper = PyImport_ImportModule(ZSERVER_MODULE_NAME ".concurrency.queue");
+        if (!queue_helper) {
             PyErr_Print();
             goto fail_args;
         }
-        Py_XDECREF(future);  // discard result
+
+
+        PyObject *res = PyObject_CallMethod(queue_helper, "push_async", "O", coro);
+        if (!res) {
+            PyErr_Print();
+        } else {
+            Py_DECREF(res);
+        }
+        Py_XDECREF(coro);
 
         Py_XDECREF(args);
         Py_XDECREF(req_inst);
-        return (NULL);
+        goto fail;
     } else {
         // sync function: call directly
         result = PyObject_CallObject(handler, args);
@@ -171,11 +165,11 @@ fail_args:
         result_cstr = strdup(tmp);
     Py_DECREF(str_obj);
 
-    /* PyGILState_Release(gstate); */
+    PyGILState_Release(gstate);
     return (result_cstr);
 
 fail:
-    /* PyGILState_Release(gstate); */
+    PyGILState_Release(gstate);
     return NULL;
 }
 
