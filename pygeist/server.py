@@ -10,7 +10,6 @@ class Server(AServer):
         try:
             _adapter._run_server(
                 port=self.port,
-                thread_pool_size=self.thread_pool_size,
             )
         except KeyboardInterrupt:
             pass

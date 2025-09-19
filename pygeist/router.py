@@ -4,6 +4,7 @@ from pygeist.abstract.endpoint import AEndpoints
 from pygeist.exceptions import EndpointsDestruct
 from pygeist.request import Request
 from .sessions import send_payload
+from pygeist.abstract.methods_handler import AMethodsHandler
 
 
 class Endpoints(AEndpoints):
@@ -17,7 +18,7 @@ class Endpoints(AEndpoints):
         _adapter._pall_endpoints()
 
 
-class RouterRigistry:
+class RouterRigistry(AMethodsHandler):
     def __init__(self,
                  prefix='',
                  tags=[],
@@ -49,30 +50,9 @@ class RouterRigistry:
             **kw
         )
 
-    def post(self,
-             *ag,
-             **kw) -> None:
-        self.create_endpoint(_adapter.POST,
-                             *ag,
-                             **kw)
-
-    def get(self,
-            *ag,
-            **kw) -> None:
-        self.create_endpoint(_adapter.GET,
-                             *ag,
-                             **kw)
-    def delete(self,
-               *ag,
-               **kw) -> None:
-        self.create_endpoint(_adapter.DELETE,
-                             *ag,
-                             **kw)
-
-    def put(self,
-            *ag,
-            **kw) -> None:
-        self.create_endpoint(_adapter.PUT,
+    def _method_handler(self, method: str, *ag, **kw):
+        method_const = getattr(_adapter, method.upper())
+        self.create_endpoint(method_const,
                              *ag,
                              **kw)
 

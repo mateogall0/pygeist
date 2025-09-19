@@ -89,16 +89,14 @@ run_zeitgeist_server_adapter(PyObject *self,
         return (NULL);
     }
 
-    static char *kwlist[] = {"port", "thread_pool_size", NULL};
+    static char *kwlist[] = {"port", NULL};
     uint32_t server_port = 4000;
-    size_t thread_pool_size = 2;
 
     if (!PyArg_ParseTupleAndKeywords(
             args, kwargs,
-            "|Ik",
+            "|I",
             kwlist,
-            &server_port,
-            &thread_pool_size))
+            &server_port))
         return (NULL);
 
     run_core_server_loop(server_port,
@@ -126,10 +124,8 @@ run_set_api_log_requests(PyObject *self, PyObject *args, PyObject *kwargs) {
     static char *kwlist[] = {"value", NULL};
     PyObject *py_enabled = NULL;
 
-
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &py_enabled))
         return NULL;
-
 
     if (!PyBool_Check(py_enabled)) {
         PyErr_SetString(PyExc_TypeError, "Argument 'enabled' must be a boolean");
@@ -137,7 +133,6 @@ run_set_api_log_requests(PyObject *self, PyObject *args, PyObject *kwargs) {
     }
 
     bool v = (py_enabled == Py_True);
-
     set_log_requests(v);
 
     Py_INCREF(Py_None);

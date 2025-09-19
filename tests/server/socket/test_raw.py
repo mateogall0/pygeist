@@ -19,7 +19,7 @@ from tests.fixtures.routed import example_routed_server
                          ])
 def test_server_socket_request(example_server, method_str, target, body, expected):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect(("127.0.0.1", example_server))
+        s.connect(("localhost", example_server))
         s.sendall(f"{method_str} {target}\r\n\r\n{body}".encode())
 
         data = s.recv(1024)
@@ -38,7 +38,7 @@ def test_server_socket_request(example_server, method_str, target, body, expecte
                          ])
 def test_server_socket_request_routed(example_routed_server, method_str, target, body, expected):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect(("127.0.0.1", example_routed_server))
+        s.connect(("localhost", example_routed_server))
         s.sendall(f"{method_str} {target}\r\n\r\n{body}".encode())
 
         data = s.recv(1024)
