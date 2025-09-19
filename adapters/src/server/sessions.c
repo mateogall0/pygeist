@@ -123,7 +123,6 @@ run_get_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
 
     Py_INCREF(value);
     return value;
-
 }
 
 PyObject *

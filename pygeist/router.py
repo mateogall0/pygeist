@@ -2,6 +2,8 @@ from pygeist import _adapter
 from typing import Callable
 from pygeist.abstract.endpoint import AEndpoints
 from pygeist.exceptions import EndpointsDestruct
+from pygeist.request import Request
+from .sessions import send_payload
 
 
 class Endpoints(AEndpoints):
@@ -15,7 +17,7 @@ class Endpoints(AEndpoints):
         _adapter._pall_endpoints()
 
 
-class Router:
+class RouterRigistry:
     def __init__(self,
                  prefix='',
                  tags=[],
@@ -68,3 +70,19 @@ class Router:
         self.create_endpoint(_adapter.PUT,
                              *ag,
                              **kw)
+
+class Router(RouterRigistry):
+    def create_endpoint(self,
+                        method: int,
+                        target: str,
+                        handler: Callable,
+                        *ag,
+                        **kw,
+                        ) -> None:
+        async def wrapped_handler(req: Request):
+            result = await handler(req)
+            str_result = result if isinstance(result, str) else str(result)
+            await send_payload(req.client_key, str_result)
+            return result
+
+        super().create_endpoint(method, target, wrapped_handler, *ag, **kw)

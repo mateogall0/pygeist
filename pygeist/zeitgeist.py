@@ -1,23 +1,52 @@
-from pygeist.router import Endpoints
+from pygeist.router import Endpoints, Router
 from pygeist.utils.singleton import singleton_class
 from pygeist.registry import (Server,
                               IdlenessHandler,
                               APIMaster,)
 
 
+class _APIRouter:
+    def __init__(self,
+                 main_prefix='',
+                 ) -> None:
+        self.router = Router(main_prefix)
+
+    def post(self,
+             *ag,
+             **kw) -> None:
+        self.router.post(*ag, **kw)
+
+    def get(self,
+            *ag,
+            **kw) -> None:
+        self.router.get(*ag, **kw)
+
+    def delete(self,
+               *ag,
+               **kw) -> None:
+        self.router.delete(*ag, **kw)
+
+    def put(self,
+            *ag,
+            **kw) -> None:
+        self.router.put(*ag, **kw)
+
+
 @singleton_class
-class ZeitgeistAPI:
+class ZeitgeistAPI(_APIRouter):
     """
     Final API abstraction
     """
     def __init__(self,
                  port = 4000,
+                 main_prefix='',
                  thread_pool_size = 4,
                  idleness_max_time = 60,
                  ) -> None:
         self.port = port
         self.thread_pool_size = thread_pool_size
         self.idleness_max_time = idleness_max_time
+        super().__init__(main_prefix)
 
     def _compose(self) -> APIMaster:
         server = Server(self.port,
