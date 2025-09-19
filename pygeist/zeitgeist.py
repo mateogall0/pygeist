@@ -11,6 +11,12 @@ class _APIRouter:
                  ) -> None:
         self.router = Router(main_prefix)
 
+    def include_router(self, router: Router) -> None:
+        self.router.include_router(router)
+
+    def init_endpoints(self):
+        self.router.create_endpoints_from_buf()
+
     def post(self,
              *ag,
              **kw) -> None:
@@ -52,6 +58,7 @@ class ZeitgeistAPI(_APIRouter):
         server = Server(self.port,
                         self.thread_pool_size)
         endpoints = Endpoints()
+        self.init_endpoints()
         idleness_handler = IdlenessHandler(self.idleness_max_time)
         return APIMaster(
             server,

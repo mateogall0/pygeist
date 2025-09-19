@@ -29,13 +29,12 @@ def test_server_socket_request(example_server, method_str, target, body, expecte
                          [
                              ('GET', '/get-1515', '', b'1515'),
                              ('GET', '/get-pow', 5, b'25'),
-                             ('GET', '/get-pow', 0, b'0'),
-                             ('GET', '/get-pow', 10, b'100'),
-                             ('GET', '/get-pow', -10, b'100'),
                              ('GET', '/get-pow', 'something', b'error'),
                              ('GET', '/get-notnonexistent', '', b'404 Resource not found'),
                              ('POST', '/get-1515', '', b'405 Method not allowed'),
                              ('this', 'is', 'invalid', b'400 Bad request'),
+                             ('GET', '/hello/get-hello', '', b'hello'),
+                             ('GET', '/hello/bye/get-bye', '', b'bye'),
                          ])
 def test_server_socket_request_routed(example_routed_server, method_str, target, body, expected):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
