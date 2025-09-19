@@ -35,6 +35,9 @@ def test_server_unwanted(example_server, method_str, target, body, expected):
 
         s0.connect(("127.0.0.1", example_server))
         s1.connect(("127.0.0.1", example_server))
+
+        time.sleep(0.1)
+
         s0.sendall(f"{method_str} {target}\r\n\r\n{body}".encode())
         data = s0.recv(1024)
         assert data == expected
