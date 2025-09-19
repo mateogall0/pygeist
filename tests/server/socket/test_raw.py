@@ -34,11 +34,10 @@ def test_server_unwanted(example_server, method_str, target, body, expected):
          socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s1:
 
         s0.connect(("127.0.0.1", example_server))
+        s1.connect(("127.0.0.1", example_server))
         s0.sendall(f"{method_str} {target}\r\n\r\n{body}".encode())
         data = s0.recv(1024)
         assert data == expected
-
-        s1.connect(("127.0.0.1", example_server))
 
         s1.sendall(f"{method_str} {target}\r\n\r\n{body}".encode())
         data = s1.recv(1024)
