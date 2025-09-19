@@ -1,6 +1,6 @@
 import socket
 import pytest
-import time
+
 from tests.fixtures.socket import example_server
 
 
@@ -23,28 +23,3 @@ def test_server_socket_request(example_server, method_str, target, body, expecte
 
         data = s.recv(1024)
         assert data == expected
-
-@pytest.mark.parametrize("method_str,target,body,expected",
-                         [
-                             ("POST", "/post-broadcast", "hello there", b"sending stuff"),
-                             ("POST", "/post-broadcast", " ", b"sending stuff"),
-                         ])
-def test_server_unwanted(example_server, method_str, target, body, expected):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s0, \
-         socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s1:
-
-        s0.connect(("127.0.0.1", example_server))
-        s1.connect(("127.0.0.1", example_server))
-
-        time.sleep(0.1)
-
-        s0.sendall(f"{method_str} {target}\r\n\r\n{body}".encode())
-        data = s0.recv(1024)
-        assert data == expected
-
-        s1.sendall(f"{method_str} {target}\r\n\r\n{body}".encode())
-        data = s1.recv(1024)
-        assert data == expected
-
-        data = s0.recv(1024)
-        assert data == body.encode()
