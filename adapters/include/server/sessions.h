@@ -1,6 +1,7 @@
 #ifndef ZPYTHON_ZSERVER_SESSIONS_H
 #define ZPYTHON_ZSERVER_SESSIONS_H
 
+#include <Python.h>
 
 PyObject*
 run_initialize_sessions_structure(PyObject *self, PyObject *args, PyObject *kwargs);

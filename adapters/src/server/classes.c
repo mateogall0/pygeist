@@ -1,6 +1,6 @@
+#include <Python.h>
 #include "adapters/include/server/classes.h"
 #include "adapters/include/server/config.h"
-#include <Python.h>
 
 
 PyObject *RequestClass = NULL;

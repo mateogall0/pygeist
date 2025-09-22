@@ -1,10 +1,10 @@
+#include <Python.h>
 #include "adapters/include/server/api_handler.h"
 #include "adapters/include/server/sessions.h"
 #include "adapters/include/server/exceptions.h"
 #include "adapters/include/server/endpoint.h"
 #include "adapters/include/server/classes.h"
 #include "adapters/include/server/const.h"
-#include <Python.h>
 
 
 PyObject *global_executor = NULL;
@@ -37,7 +37,7 @@ static PyMethodDef AdapterMethods[] = {
      "Send bytes to a specificied client with its id"},
     {"_init_endpoints_list",
      run_init_endpoints_list,
-     METH_VARARGS | METH_KEYWORDS,
+     METH_NOARGS,
      "Initialize endpoints list"},
     {"_destroy_endpoints_list",
      run_destroy_endpoints_list,
@@ -66,9 +66,13 @@ static PyMethodDef AdapterMethods[] = {
 static struct PyModuleDef adaptermodule = {
     PyModuleDef_HEAD_INIT,
     "_adapter",
-    "Zeitgeist server adapter",
+    "Zeitgeist C server adapter",
     -1,
-    AdapterMethods
+    AdapterMethods,
+    NULL,  // m_slots
+    NULL,  // m_traverse
+    NULL,  // m_clear
+    NULL   // m_free
 };
 
 // Module init function (entry point for import)
@@ -81,17 +85,19 @@ PyMODINIT_FUNC PyInit__adapter(void) {
     init_consts(m);
     int max_workers = 2;
     PyObject *concurrent = PyImport_ImportModule("concurrent.futures");
-    if (!concurrent) return NULL;
+    if (!concurrent)
+        return (NULL);
 
     PyObject *executor_class = PyObject_GetAttrString(concurrent, "ThreadPoolExecutor");
-    if (!executor_class) return NULL;
+    if (!executor_class)
+        return (NULL);
 
     global_executor = PyObject_CallFunction(executor_class, "(i)", max_workers);
     if (!global_executor) {
         PyErr_Print();
         Py_DECREF(executor_class);
         Py_DECREF(concurrent);
-        return NULL;
+        return (NULL);
     }
 
 

@@ -1,6 +1,6 @@
+#include <Python.h>
 #include "adapters/include/server/const.h"
 #include "core/include/server/api/endpoint.h"
-#include <Python.h>
 
 
 void _add_methods_const(PyObject *m) {

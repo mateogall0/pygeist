@@ -1,3 +1,4 @@
+#include <Python.h>
 #include "core/include/server/master.h"
 #include "core/include/server/static.h"
 #include "core/include/server/api/socket.h"
@@ -6,7 +7,6 @@
 #include "adapters/include/server/api_handler.h"
 #include "adapters/include/server/exceptions.h"
 #include <sys/prctl.h>
-#include <Python.h>
 #include <stdbool.h>
 
 
@@ -20,8 +20,7 @@ _handle_input_py(PyObject *self,
 
     respond(client_fd);
 
-    Py_INCREF(Py_None);
-    return (Py_None);
+    Py_RETURN_NONE;
 }
 
 void _handle_input(int client_fd) {
@@ -104,8 +103,7 @@ run_zeitgeist_server_adapter(PyObject *self,
                          ZSERVER_SYSTEM_VERBOSE,
                          _handle_input);
 
-    Py_INCREF(Py_None);
-    return (Py_None);
+    Py_RETURN_NONE;
 }
 
 PyObject*
@@ -115,7 +113,7 @@ run_get_api_log_requests(PyObject *self) {
     bool b = get_log_requests();
 
     Py_INCREF(b ? Py_True : Py_False);
-    return b ? Py_True : Py_False;
+    return (b ? Py_True : Py_False);
 }
 
 PyObject*
@@ -125,17 +123,15 @@ run_set_api_log_requests(PyObject *self, PyObject *args, PyObject *kwargs) {
     PyObject *py_enabled = NULL;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, &py_enabled))
-        return NULL;
+        return (NULL);
 
     if (!PyBool_Check(py_enabled)) {
         PyErr_SetString(PyExc_TypeError, "Argument 'enabled' must be a boolean");
-        return NULL;
+        return (NULL);
     }
 
     bool v = (py_enabled == Py_True);
     set_log_requests(v);
 
-    Py_INCREF(Py_None);
-    return Py_None;
-
+    Py_RETURN_NONE;
 }

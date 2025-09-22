@@ -1,4 +1,5 @@
 #define PY_SSIZE_T_CLEAN
+#include <Python.h>
 #include "core/include/server/master.h"
 #include "core/include/server/sessions/map.h"
 #include "core/include/server/sessions/wheel.h"
@@ -38,8 +39,7 @@ run_initialize_sessions_structure(PyObject *self,
         return (NULL);
     }
 
-    Py_INCREF(Py_None);
-    return (Py_None);
+    Py_RETURN_NONE;
 }
 
 PyObject*
@@ -53,9 +53,7 @@ run_destroy_sessions_structure(PyObject *self) {
     destroy_connected_sessions_map();
     destroy_connected_sessions_wheel();
 
-    Py_INCREF(Py_None);
-    return (Py_None);
-
+    Py_RETURN_NONE;
 }
 
 PyObject*
@@ -122,7 +120,7 @@ run_get_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
     }
 
     Py_INCREF(value);
-    return value;
+    return (value);
 }
 
 PyObject *
@@ -159,6 +157,5 @@ run_send_unrequested_payload(PyObject *self, PyObject *args, PyObject *kwargs) {
 
     send_unrequested_payload(id, payload, payload_size);
 
-    Py_INCREF(Py_None);
-    return (Py_None);
+    Py_RETURN_NONE;
 }

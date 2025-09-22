@@ -1,8 +1,8 @@
+#include <Python.h>
 #include "adapters/include/server/exceptions.h"
 #include "adapters/include/server/classes.h"
 #include "adapters/include/server/config.h"
 #include "core/include/server/api/endpoint.h"
-#include <Python.h>
 
 
 PyObject*
@@ -19,8 +19,7 @@ run_init_endpoints_list(PyObject *self) {
         return (NULL);
     }
 
-    Py_INCREF(Py_None);
-    return (Py_None);
+    Py_RETURN_NONE;
 }
 
 PyObject*
@@ -33,8 +32,7 @@ run_destroy_endpoints_list(PyObject *self) {
     }
     destroy_endpoints();
 
-    Py_INCREF(Py_None);
-    return (Py_None);
+    Py_RETURN_NONE;
 }
 
 char *py_handler_wrapper(request_t *req, PyObject *py_func) {
@@ -44,7 +42,7 @@ char *py_handler_wrapper(request_t *req, PyObject *py_func) {
     PyObject *capsule = PyCapsule_New((void *)req, "request_t", NULL);
     if (!capsule) {
         PyGILState_Release(gstate);
-        return NULL;
+        return (NULL);
     }
 
     // Call Python function with the capsule
@@ -59,7 +57,7 @@ char *py_handler_wrapper(request_t *req, PyObject *py_func) {
     }
 
     PyGILState_Release(gstate);
-    return ret;
+    return (ret);
 }
 
 char *_handler(request_t *r) {
@@ -170,7 +168,7 @@ fail_args:
 
 fail:
     PyGILState_Release(gstate);
-    return NULL;
+    return (NULL);
 }
 
 PyObject*
@@ -201,20 +199,19 @@ run_create_append_endpoint(PyObject *self,
         return (NULL);
     if (!PyCallable_Check(py_handler)) {
         PyErr_SetString(PyExc_TypeError, "handler must be a callable");
-        return NULL;
+        return (NULL);
     }
 
     if (method < 0 || method >= METHODS_COUNT) {
         PyErr_SetString(PyExc_ValueError, "invalid method enum value");
-        return NULL;
+        return (NULL);
     }
 
     endpoint_t *e = set_endpoint_va(4, method, target, _handler, true);
     Py_INCREF(py_handler);
     e->meta = (uintptr_t)py_handler;
 
-    Py_INCREF(Py_None);
-    return (Py_None);
+    Py_RETURN_NONE;
 }
 
 PyObject*
@@ -223,6 +220,5 @@ run_print_all_endpoints(PyObject *self) {
 
     pall_endpoints();
 
-    Py_INCREF(Py_None);
-    return (Py_None);
+    Py_RETURN_NONE;
 }

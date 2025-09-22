@@ -1,7 +1,7 @@
+#include <Python.h>
 #include "adapters/include/server/config.h"
 #include "adapters/include/server/exceptions.h"
 #include <stdio.h>
-#include <Python.h>
 
 
 PyObject *ServerAlreadyStarted = NULL;

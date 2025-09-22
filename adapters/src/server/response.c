@@ -1,3 +1,4 @@
+#include <Python.h>
 #include "adapters/include/server/response.h"
 #include "core/include/server/api/endpoint.h"
 

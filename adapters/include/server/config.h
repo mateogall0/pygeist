@@ -1,6 +1,7 @@
 #ifndef ZPYTHON_ZSERVER_CONFIG_H
 #define ZPYTHON_ZSERVER_CONFIG_H
 
+#include <Python.h>
 
 #ifndef ZSERVER_SYSTEM_VERBOSE
 #define ZSERVER_SYSTEM_VERBOSE false
