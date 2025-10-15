@@ -33,22 +33,22 @@ def _build_example(port):
     async def handlerhello(req: Request):
         return 'hello'
 
-    nested_r.get('/get-hello', handlerhello)
+    nested_r.get('/get-hello', handlerhello, status_code=200)
 
     nested_r2 = Router('/bye')
 
     async def handlerbye(req: Request):
         return 'bye'
 
-    nested_r2.get('/get-bye', handlerbye)
+    nested_r2.get('/get-bye', handlerbye, status_code=200)
 
     nested_r.include_router(nested_r2)
 
     r.include_router(nested_r)
 
-    r.get('/get-1515', handler1515)
-    r.get('/get-pow', handlerpow)
-    r.post('/post-broadcast', broadcast)
+    r.get('/get-1515', handler1515, status_code=200)
+    r.get('/get-pow', handlerpow, status_code=200)
+    r.post('/post-broadcast', broadcast, status_code=200)
     api = ZeitgeistAPI(port=port)
     api.include_router(r)
     api.run()

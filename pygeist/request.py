@@ -5,9 +5,11 @@ class Request:
                  body=None,
                  headers=None,
                  client_key=None,
+                 rid=None,
                  ) -> None:
         self.headers = headers
         self.body = body
         self.method = method
         self.target = target
         self.client_key = client_key
+        self.rid = rid

@@ -75,7 +75,10 @@ run_set_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
             &id, &value))
         return (NULL);
 
-    connected_session_t *session = get_connected_session(id);
+    connected_session_t *session = NULL;
+    Py_BEGIN_ALLOW_THREADS
+    session = get_connected_session(id);
+    Py_END_ALLOW_THREADS
     if (!session) {
         PyErr_SetString(SessionCreation, "session doesn't exist");
         return (NULL);
@@ -108,7 +111,10 @@ run_get_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
             &id))
         return (NULL);
 
-    connected_session_t *session = get_connected_session(id);
+    connected_session_t *session = NULL;
+    Py_BEGIN_ALLOW_THREADS
+    session = get_connected_session(id);
+    Py_END_ALLOW_THREADS
     if (!session) {
         PyErr_SetString(SessionCreation, "session doesn't exist");
         return (NULL);
@@ -148,14 +154,19 @@ run_send_unrequested_payload(PyObject *self, PyObject *args, PyObject *kwargs) {
         return (NULL);
     }
 
-    connected_session_t *session = get_connected_session(id);
+    connected_session_t *session = NULL;
+    Py_BEGIN_ALLOW_THREADS
+    session = get_connected_session(id);
+    Py_END_ALLOW_THREADS
     if (!session) {
         PyErr_SetString(SessionCreation, "session doesn't exist");
         return (NULL);
     }
     size_t payload_size = (size_t)payload_len_size;
 
+    Py_BEGIN_ALLOW_THREADS
     send_unrequested_payload(id, payload, payload_size);
+    Py_END_ALLOW_THREADS
 
     Py_RETURN_NONE;
 }

@@ -5,6 +5,7 @@ from pygeist.exceptions import EndpointsDestruct
 from pygeist.request import Request
 from .sessions import send_payload
 from pygeist.abstract.methods_handler import AMethodsHandler
+import json
 
 
 class Endpoints(AEndpoints):
@@ -72,13 +73,16 @@ class Router(RouterRigistry):
                         method: int,
                         target: str,
                         handler: Callable,
+                        status_code: int,
                         *ag,
                         **kw,
                         ) -> None:
         async def wrapped_handler(req: Request):
             result = await handler(req)
-            str_result = result if isinstance(result, str) else str(result)
-            await send_payload(req.client_key, str_result)
+            str_result = result if isinstance(result, str) else json.dumps(result)
+            fres = f'ZEIT/RES {status_code} {req.rid}\r\nContent-Length: {len(str_result)}\r\n\r\n{str_result}'
+
+            await send_payload(req.client_key, fres)
             return result
 
         self._buff.append((method, target, wrapped_handler, ag, kw))

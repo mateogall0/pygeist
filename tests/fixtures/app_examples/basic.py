@@ -7,5 +7,10 @@ from . import zeit_app
 def app(zeit_app):
     async def main(req: Request):
         return 'Hello world!'
-    zeit_app.get('/', main)
+
+    async def main_str_json(req: Request):
+        return '{"name": "Alice", "age": 30, "city": "London"}'
+
+    zeit_app.get('/', main, status_code=200)
+    zeit_app.get('/s', main, status_code=200)
     yield zeit_app

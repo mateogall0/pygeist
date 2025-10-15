@@ -3,6 +3,7 @@ from pygeist.abstract.methods_handler import AMethodsHandler
 import multiprocessing
 import socket
 import time
+import json
 
 
 def _runner(app):
@@ -20,6 +21,24 @@ class Response:
         all_headers, _, content = self.payload.partition("\r\n\r\n")
         self.all_head = all_headers
         self.content = content
+        self.body = content
+
+    @property
+    def body(self) -> dict | str | None:
+        return self._body
+
+    @body.setter
+    def body(self, body: dict | str | None) -> None:
+        try:
+            self._body = json.loads(body)
+        except (json.JSONDecodeError, TypeError):
+            self._body = body
+
+    def __str__(self) -> str:
+        return f'Response:\npayload: {self.payload}\n'
+
+    def __repr__(self) -> str:
+        return str(self)
 
 class TestClient(AMethodsHandler):
     __test__ = False  # tells pytest to not collect this
@@ -52,7 +71,7 @@ class TestClient(AMethodsHandler):
                         ) -> Response:
         return self.send_receive(*ag, **kw)
 
-    def connect(self):
+    def link(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect(("localhost", self.app.port))
 
@@ -68,7 +87,7 @@ class TestClient(AMethodsHandler):
         response_data = self.sock.recv(self.buff_size)
         return Response(response_data, _process)
 
-    def disconnect(self):
+    def unlink(self):
         if self.sock:
             self.sock.close()
             self.sock = None
