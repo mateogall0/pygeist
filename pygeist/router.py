@@ -80,7 +80,7 @@ class Router(RouterRigistry):
         async def wrapped_handler(req: Request):
             result = await handler(req)
             str_result = result if isinstance(result, str) else json.dumps(result)
-            fres = f'ZEIT/RES {status_code} {req.rid}\r\nContent-Length: {len(str_result)}\r\n\r\n{str_result}'
+            fres = f'{_adapter.SERVER_VERSION} {status_code} {req.rid}\r\nContent-Length: {len(str_result)}\r\n\r\n{str_result}'
 
             await send_payload(req.client_key, fres)
             return result
