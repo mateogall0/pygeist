@@ -7,6 +7,7 @@
 
 PyObject*
 run_init_endpoints_list(PyObject *self) {
+    PyGILState_STATE gstate = PyGILState_Ensure();
     (void)self;
     if (endpoints) {
         PyErr_SetString(EndpointsInit,
@@ -19,11 +20,13 @@ run_init_endpoints_list(PyObject *self) {
         return (NULL);
     }
 
+    PyGILState_Release(gstate);
     Py_RETURN_NONE;
 }
 
 PyObject*
 run_destroy_endpoints_list(PyObject *self) {
+    PyGILState_STATE gstate = PyGILState_Ensure();
     (void)self;
     if (!endpoints) {
         PyErr_SetString(EndpointsDestruct,
@@ -32,16 +35,14 @@ run_destroy_endpoints_list(PyObject *self) {
     }
     destroy_endpoints();
 
+    PyGILState_Release(gstate);
     Py_RETURN_NONE;
 }
 
 char *py_handler_wrapper(request_t *req, PyObject *py_func) {
-    PyGILState_STATE gstate = PyGILState_Ensure();
-
     // Wrap raw C pointer in PyCapsule
     PyObject *capsule = PyCapsule_New((void *)req, "request_t", NULL);
     if (!capsule) {
-        PyGILState_Release(gstate);
         return (NULL);
     }
 
@@ -56,12 +57,10 @@ char *py_handler_wrapper(request_t *req, PyObject *py_func) {
         Py_DECREF(result);
     }
 
-    PyGILState_Release(gstate);
     return (ret);
 }
 
 char *_handler(request_t *r) {
-    PyGILState_STATE gstate = PyGILState_Ensure();
     char *result_cstr = NULL;
 
     // Build Python Request instance
@@ -164,11 +163,9 @@ fail_args:
         result_cstr = strdup(tmp);
     Py_DECREF(str_obj);
 
-    PyGILState_Release(gstate);
     return (result_cstr);
 
 fail:
-    PyGILState_Release(gstate);
     return (NULL);
 }
 

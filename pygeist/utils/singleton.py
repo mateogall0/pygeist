@@ -1,22 +1,34 @@
+import threading
 from functools import wraps
-from threading import Lock
-import weakref
+
 
 def singleton_class(_cls=None, *, exc_cls=ValueError):
+    """Decorator to make a class a singleton. Raises exc_cls if an instance already exists."""
+    import threading
+    lock = threading.Lock()
     instances = {}
-    lock = Lock()
 
-    def wrap(cls):
-        @wraps(cls)
-        def wrapper(*args, **kwargs):
-            with lock:
-                inst_ref = instances.get(cls)
-                inst = inst_ref() if inst_ref else None
-                if inst is None:
-                    inst = cls(*args, **kwargs)
-                    instances[cls] = weakref.ref(inst)
-                    return inst
-                raise exc_cls(f"An instance of {cls.__name__} already exists")
-        return wrapper
+    def decorator(cls):
+        class SingletonWrapper(cls):
+            def __new__(cls_inner, *args, **kwargs):
+                with lock:
+                    if cls in instances:
+                        raise exc_cls(f"An instance of {cls.__name__} already exists.")
+                    instance = super().__new__(cls_inner)
+                    instances[cls] = instance
+                    return instance
 
-    return wrap(_cls) if _cls else wrap
+            @classmethod
+            def _reset_instance(cls_inner):
+                with lock:
+                    instances.pop(cls, None)
+
+        # preserve basic class info
+        SingletonWrapper.__name__ = cls.__name__
+        SingletonWrapper.__doc__ = cls.__doc__
+        return SingletonWrapper
+
+    if _cls is None:
+        return decorator
+    else:
+        return decorator(_cls)

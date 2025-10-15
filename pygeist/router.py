@@ -80,20 +80,23 @@ class Router(RouterRigistry):
         async def wrapped_handler(req: Request):
             try:
                 result = await handler(req)
+                str_result = result if isinstance(result, str) else json.dumps(result)
+                fres = (
+                    f"{_adapter.SERVER_VERSION} {status_code} {req.rid}\r\n"
+                    f"Content-Length: {len(str_result)}\r\n\r\n"
+                    f"{str_result}"
+                )
             except ZEITException as zex:
-                result = zex.get_body_result()
-                await send_payload(req.client_key,
-                                   zex.get_fres(_adapter.SERVER_VERSION,req))
-                return result
-            str_result = result if isinstance(result, str) else json.dumps(result)
-            fres = (
-                f"{_adapter.SERVER_VERSION} {status_code} {req.rid}\r\n"
-                f"Content-Length: {len(str_result)}\r\n\r\n"
-                f"{str_result}"
-            )
+                fres = zex.get_fres(_adapter.SERVER_VERSION, req)
+                str_result = zex.get_body_result()
+            except Exception as exc:
+                print(exc)
+                zex = ZEITException(500, 'Internal server error')
+                fres = zex.get_fres(_adapter.SERVER_VERSION, req)
+                str_result = zex.get_body_result()
 
             await send_payload(req.client_key, fres)
-            return result
+            return str_result
 
         self._buff.append((method, target, wrapped_handler, ag, kw))
 

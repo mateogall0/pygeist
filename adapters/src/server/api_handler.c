@@ -14,19 +14,20 @@ PyObject *
 _handle_input_py(PyObject *self,
                  PyObject *args) {
     (void)self;
+    PyGILState_STATE gstate = PyGILState_Ensure();
     int client_fd;
     if (!PyArg_ParseTuple(args, "i", &client_fd))
         return NULL;
 
-    Py_BEGIN_ALLOW_THREADS
-    respond(client_fd);
-    Py_END_ALLOW_THREADS
 
+    respond(client_fd);
+
+    PyGILState_Release(gstate);
     Py_RETURN_NONE;
 }
 
 void _handle_input(int client_fd) {
-    // Import our Python helper module that defines run()
+    PyGILState_STATE gstate = PyGILState_Ensure();
     PyObject *helpers = PyImport_ImportModule(ZSERVER_MODULE_NAME ".concurrency.helpers");
     if (!helpers) {
         PyErr_Print();
@@ -49,12 +50,21 @@ void _handle_input(int client_fd) {
 
     PyObject *py_handler = PyCFunction_New(&method_def, NULL);
     if (!py_handler) {
+        Py_DECREF(run_func);
         return;
     }
 
-    // Then pack it into args
-    PyObject *args = PyTuple_Pack(2, py_handler, PyLong_FromLong(client_fd));
+    PyObject *py_fd = PyLong_FromLong(client_fd);
+    if (!py_fd) {
+        Py_DECREF(py_handler);
+        Py_DECREF(run_func);
+        return;
+    }
+
+    PyObject *args = PyTuple_Pack(2, py_handler, py_fd);
     Py_DECREF(py_handler);
+    Py_DECREF(py_fd);
+
     if (!args) {
         PyErr_Print();
         Py_DECREF(run_func);
@@ -68,7 +78,8 @@ void _handle_input(int client_fd) {
     if (!res)
         PyErr_Print();
     else
-        Py_XDECREF(res);
+        Py_DECREF(res);
+    PyGILState_Release(gstate);
 }
 
 
@@ -92,6 +103,8 @@ run_zeitgeist_server_adapter(PyObject *self,
             &server_port))
         return (NULL);
 
+    Py_Initialize();
+    PyEval_InitThreads();
     run_core_server_loop(server_port,
                          ZSERVER_SYSTEM_BATCH_SIZE,
                          ZSERVER_SYSTEM_VERBOSE,

@@ -5,8 +5,11 @@ import pytest
 
 @pytest.mark.parametrize("target,status_code,expected", [
     ('/', 200, 'Hello world!'),
+    ('/p', 405, '405 Method not allowed'),
     ('/s', 200, {"name": "Alice", "age": 30, "city": "London"}),
     ('/exception', 401, 'cannot be accessed'),
+#    ('/unhandled', 500, 'Internal server error'),
+    ('/nonexistent_route', 404, '404 Resource not found')
 ])
 def test_request(app, target, status_code, expected):
     client = TestClient(app)
