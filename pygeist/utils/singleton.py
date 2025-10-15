@@ -1,12 +1,8 @@
 from functools import wraps
 from threading import Lock
-
+import weakref
 
 def singleton_class(_cls=None, *, exc_cls=ValueError):
-    """
-    Decorator that restricts a class to a single instance.
-    Raises `exc_cls` if an instance already exists.
-    """
     instances = {}
     lock = Lock()
 
@@ -14,15 +10,13 @@ def singleton_class(_cls=None, *, exc_cls=ValueError):
         @wraps(cls)
         def wrapper(*args, **kwargs):
             with lock:
-                if cls not in instances:
-                    instances[cls] = cls(*args, **kwargs)
-                    return instances[cls]
+                inst_ref = instances.get(cls)
+                inst = inst_ref() if inst_ref else None
+                if inst is None:
+                    inst = cls(*args, **kwargs)
+                    instances[cls] = weakref.ref(inst)
+                    return inst
                 raise exc_cls(f"An instance of {cls.__name__} already exists")
         return wrapper
 
-    if _cls is None:
-        # decorator called with arguments
-        return wrap
-    else:
-        # decorator called without arguments
-        return wrap(_cls)
+    return wrap(_cls) if _cls else wrap

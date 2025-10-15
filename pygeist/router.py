@@ -1,7 +1,7 @@
 from pygeist import _adapter
 from typing import Callable
 from pygeist.abstract.endpoint import AEndpoints
-from pygeist.exceptions import EndpointsDestruct
+from pygeist.exceptions import EndpointsDestruct, ZEITException
 from pygeist.request import Request
 from .sessions import send_payload
 from pygeist.abstract.methods_handler import AMethodsHandler
@@ -78,9 +78,19 @@ class Router(RouterRigistry):
                         **kw,
                         ) -> None:
         async def wrapped_handler(req: Request):
-            result = await handler(req)
+            try:
+                result = await handler(req)
+            except ZEITException as zex:
+                result = zex.get_body_result()
+                await send_payload(req.client_key,
+                                   zex.get_fres(_adapter.SERVER_VERSION,req))
+                return result
             str_result = result if isinstance(result, str) else json.dumps(result)
-            fres = f'{_adapter.SERVER_VERSION} {status_code} {req.rid}\r\nContent-Length: {len(str_result)}\r\n\r\n{str_result}'
+            fres = (
+                f"{_adapter.SERVER_VERSION} {status_code} {req.rid}\r\n"
+                f"Content-Length: {len(str_result)}\r\n\r\n"
+                f"{str_result}"
+            )
 
             await send_payload(req.client_key, fres)
             return result

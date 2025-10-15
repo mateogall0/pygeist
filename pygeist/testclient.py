@@ -19,6 +19,7 @@ class Response:
         if not _process:
             return
         all_headers, _, content = self.payload.partition("\r\n\r\n")
+        self.status_code = int(all_headers.split()[1])
         self.all_head = all_headers
         self.content = content
         self.body = content
