@@ -15,12 +15,12 @@ def app(zeit_app):
     async def main_with_exception(req: Request):
         raise ZEITException(401, 'cannot be accessed')
 
-    #async def main_with_unhandled(req: Request):
-    #    raise TypeError('An errorr')
+    async def main_with_unhandled(req: Request):
+        raise TypeError('An errorr')
 
     zeit_app.get('/', main, status_code=200)
     zeit_app.post('/p', main, status_code=200)
     zeit_app.get('/s', main_str_json, status_code=200)
     zeit_app.get('/exception', main_with_exception, status_code=200)
-    #zeit_app.get('/unhandled', main_with_unhandled, status_code=200)
+    zeit_app.get('/unhandled', main_with_unhandled, status_code=200)
     yield zeit_app

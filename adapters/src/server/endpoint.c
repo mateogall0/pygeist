@@ -40,6 +40,7 @@ run_destroy_endpoints_list(PyObject *self) {
 }
 
 char *py_handler_wrapper(request_t *req, PyObject *py_func) {
+    PyGILState_STATE gstate = PyGILState_Ensure();
     // Wrap raw C pointer in PyCapsule
     PyObject *capsule = PyCapsule_New((void *)req, "request_t", NULL);
     if (!capsule) {
@@ -57,6 +58,7 @@ char *py_handler_wrapper(request_t *req, PyObject *py_func) {
         Py_DECREF(result);
     }
 
+    PyGILState_Release(gstate);
     return (ret);
 }
 

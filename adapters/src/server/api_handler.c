@@ -14,7 +14,6 @@ PyObject *
 _handle_input_py(PyObject *self,
                  PyObject *args) {
     (void)self;
-    PyGILState_STATE gstate = PyGILState_Ensure();
     int client_fd;
     if (!PyArg_ParseTuple(args, "i", &client_fd))
         return NULL;
@@ -22,12 +21,10 @@ _handle_input_py(PyObject *self,
 
     respond(client_fd);
 
-    PyGILState_Release(gstate);
     Py_RETURN_NONE;
 }
 
 void _handle_input(int client_fd) {
-    PyGILState_STATE gstate = PyGILState_Ensure();
     PyObject *helpers = PyImport_ImportModule(ZSERVER_MODULE_NAME ".concurrency.helpers");
     if (!helpers) {
         PyErr_Print();
@@ -79,7 +76,6 @@ void _handle_input(int client_fd) {
         PyErr_Print();
     else
         Py_DECREF(res);
-    PyGILState_Release(gstate);
 }
 
 
@@ -97,14 +93,12 @@ run_zeitgeist_server_adapter(PyObject *self,
     uint32_t server_port = 4000;
 
     if (!PyArg_ParseTupleAndKeywords(
-            args, kwargs,
-            "|I",
-            kwlist,
-            &server_port))
+        args, kwargs,
+        "|I",
+        kwlist,
+        &server_port)) {
         return (NULL);
-
-    Py_Initialize();
-    PyEval_InitThreads();
+    }
     run_core_server_loop(server_port,
                          ZSERVER_SYSTEM_BATCH_SIZE,
                          ZSERVER_SYSTEM_VERBOSE,
