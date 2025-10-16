@@ -18,16 +18,20 @@ _handle_input_py(PyObject *self,
     if (!PyArg_ParseTuple(args, "i", &client_fd))
         return NULL;
 
-
+    Py_BEGIN_ALLOW_THREADS
     respond(client_fd);
+    Py_END_ALLOW_THREADS
 
     Py_RETURN_NONE;
 }
 
 void _handle_input(int client_fd) {
+    PyGILState_STATE gstate = PyGILState_Ensure();  // Acquire GIL
+
     PyObject *helpers = PyImport_ImportModule(ZSERVER_MODULE_NAME ".concurrency.helpers");
     if (!helpers) {
         PyErr_Print();
+        PyGILState_Release(gstate);
         return;
     }
 
@@ -35,6 +39,7 @@ void _handle_input(int client_fd) {
     Py_DECREF(helpers);
     if (!run_func) {
         PyErr_Print();
+        PyGILState_Release(gstate);
         return;
     }
 
@@ -48,6 +53,7 @@ void _handle_input(int client_fd) {
     PyObject *py_handler = PyCFunction_New(&method_def, NULL);
     if (!py_handler) {
         Py_DECREF(run_func);
+        PyGILState_Release(gstate);
         return;
     }
 
@@ -55,6 +61,7 @@ void _handle_input(int client_fd) {
     if (!py_fd) {
         Py_DECREF(py_handler);
         Py_DECREF(run_func);
+        PyGILState_Release(gstate);
         return;
     }
 
@@ -65,6 +72,7 @@ void _handle_input(int client_fd) {
     if (!args) {
         PyErr_Print();
         Py_DECREF(run_func);
+        PyGILState_Release(gstate);
         return;
     }
 
@@ -76,6 +84,8 @@ void _handle_input(int client_fd) {
         PyErr_Print();
     else
         Py_DECREF(res);
+
+    PyGILState_Release(gstate);  // Release GIL
 }
 
 
@@ -99,11 +109,11 @@ run_zeitgeist_server_adapter(PyObject *self,
         &server_port)) {
         return (NULL);
     }
+
     run_core_server_loop(server_port,
                          ZSERVER_SYSTEM_BATCH_SIZE,
                          ZSERVER_SYSTEM_VERBOSE,
                          _handle_input);
-
     Py_RETURN_NONE;
 }
 

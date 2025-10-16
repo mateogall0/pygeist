@@ -2,14 +2,15 @@ from pygeist.utils.singleton import singleton_class
 from pygeist.abstract.api import AServer
 from pygeist import _adapter
 from pygeist.exceptions import ServerAlreadyStarted
+import asyncio
 
 
-@singleton_class(exc_cls=ServerAlreadyStarted)
 class Server(AServer):
-    def run(self,) -> None:
+    async def run(self,) -> None:
         try:
-            _adapter._run_server(
-                port=self.port,
+            await asyncio.to_thread(
+                _adapter._run_server,
+                self.port,
             )
         except KeyboardInterrupt:
             pass

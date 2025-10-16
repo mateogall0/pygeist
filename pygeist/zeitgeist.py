@@ -4,6 +4,7 @@ from pygeist.registry import (Server,
                               IdlenessHandler,
                               APIMaster,)
 from pygeist.abstract.methods_handler import AMethodsHandler
+import asyncio
 
 
 class _APIRouter(AMethodsHandler):
@@ -22,7 +23,6 @@ class _APIRouter(AMethodsHandler):
         handler = getattr(self.router, method)
         handler(*ag, **kw)
 
-@singleton_class
 class ZeitgeistAPI(_APIRouter):
     """
     Final API abstraction
@@ -50,7 +50,10 @@ class ZeitgeistAPI(_APIRouter):
     def _run(self,
              api_master: APIMaster,
              ) -> None:
-        api_master.run()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(api_master.run())
+        loop.close()
 
     def run(self) -> None:
         api_master = self._compose()

@@ -51,7 +51,7 @@ def example_routed_server() -> int:
                                              args=(port,))
     server_process.start()
 
-    for _ in range(50):
+    for _ in range(500):
         try:
             with socket.create_connection(("127.0.0.1", port), timeout=0.1):
                 break

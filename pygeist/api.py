@@ -4,7 +4,6 @@ from pygeist.abstract.idleness_handler import AIdlenessHandler
 from pygeist.abstract.endpoint import AEndpoints
 
 
-@singleton_class
 class APIMaster:
     def __init__(self,
                  server: AServer,
@@ -15,6 +14,6 @@ class APIMaster:
         self.idleness_handler = idleness_handler
         self.endpoints = endpoints
 
-    def run(self):
+    async def run(self):
         with self.idleness_handler as _idleness_handler:
-            self.server.run()
+            await self.server.run()

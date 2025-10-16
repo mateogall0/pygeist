@@ -2,6 +2,7 @@ import pytest
 from pygeist.exceptions import ZEITException
 from pygeist.request import Request
 from . import zeit_app
+import asyncio
 
 
 @pytest.fixture
@@ -18,9 +19,14 @@ def app(zeit_app):
     async def main_with_unhandled(req: Request):
         raise TypeError('An errorr')
 
+    async def slow_handler(req: Request):
+        await asyncio.sleep(1)
+        return "done"
+
     zeit_app.get('/', main, status_code=200)
     zeit_app.post('/p', main, status_code=200)
     zeit_app.get('/s', main_str_json, status_code=200)
     zeit_app.get('/exception', main_with_exception, status_code=200)
     zeit_app.get('/unhandled', main_with_unhandled, status_code=200)
+    zeit_app.get('/async', slow_handler, status_code=200)
     yield zeit_app

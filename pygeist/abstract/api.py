@@ -10,6 +10,6 @@ class AServer(ABC):
         self.thread_pool_size: int = thread_pool_size
 
     @abstractmethod
-    def run(self,
+    async def run(self,
             ) -> None:
         pass

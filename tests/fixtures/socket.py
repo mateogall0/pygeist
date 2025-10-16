@@ -6,6 +6,7 @@ import pytest
 import multiprocessing
 import socket
 import time
+import asyncio
 
 
 def _build_example(port):
@@ -39,7 +40,6 @@ def _find_free_port():
     port = s.getsockname()[1]
     s.close()
     return port
-
 
 @pytest.fixture
 def example_server() -> int:

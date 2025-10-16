@@ -60,6 +60,7 @@ char *py_handler_wrapper(request_t *req, PyObject *py_func) {
 }
 
 char *_handler(request_t *r) {
+    PyGILState_STATE gstate = PyGILState_Ensure();
     char *result_cstr = NULL;
 
     // Build Python Request instance
@@ -170,9 +171,12 @@ fail_args:
         result_cstr = strdup(tmp);
     Py_DECREF(str_obj);
 
+
+    PyGILState_Release(gstate);
     return (result_cstr);
 
 fail:
+    PyGILState_Release(gstate);
     return (NULL);
 }
 
