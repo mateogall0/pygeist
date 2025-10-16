@@ -4,6 +4,7 @@ import multiprocessing
 import socket
 import time
 import json
+import weakref
 
 
 def _runner(app):
@@ -38,8 +39,8 @@ class Response:
     def __str__(self) -> str:
         return f'Response:\npayload: {self.payload}\n'
 
-    def __repr__(self) -> str:
-        return str(self)
+    __repr__ = __str__
+
 
 class TestClient(AMethodsHandler):
     __test__ = False  # tells pytest to not collect this
@@ -65,6 +66,8 @@ class TestClient(AMethodsHandler):
                 time.sleep(0.001)
         else:
             raise RuntimeError("server did not start in time")
+
+        self._finalizer = weakref.finalize(self, self._cleanup_server, self.server_process)
 
     def _method_handler(self,
                         *ag,
@@ -93,6 +96,15 @@ class TestClient(AMethodsHandler):
             self.sock.close()
             self.sock = None
 
+    @staticmethod
+    def _cleanup_server(proc):
+        if proc.is_alive():
+            proc.terminate()
+            proc.join()
+
+    def stop_server(self):
+        self._cleanup_server(self.server_process)
+        self._finalizer.detach()
+
     def __del__(self):
-        self.server_process.terminate()
-        self.server_process.join()
+        self.stop_server()

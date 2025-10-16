@@ -5,9 +5,9 @@
 #include "core/include/server/sessions/wheel.h"
 #include "core/include/server/api/response.h"
 #include "adapters/include/server/exceptions.h"
-#include <Python.h>
 #include <stddef.h>
 #include <time.h>
+#include "core/include/debug.h"
 
 
 PyObject*
@@ -162,11 +162,13 @@ run_send_unrequested_payload(PyObject *self, PyObject *args, PyObject *kwargs) {
         PyErr_SetString(SessionCreation, "session doesn't exist");
         return (NULL);
     }
-    size_t payload_size = (size_t)payload_len_size;
-
+    print_debug("Sending the payload from Python: %s\n", payload);
     Py_BEGIN_ALLOW_THREADS
+    size_t payload_size = (size_t)payload_len_size;
     send_unrequested_payload(id, payload, payload_size);
     Py_END_ALLOW_THREADS
+
+    print_debug("Sent the payload from Python: %s\n", payload);
 
     Py_RETURN_NONE;
 }

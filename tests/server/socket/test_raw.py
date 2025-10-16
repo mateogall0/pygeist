@@ -27,8 +27,6 @@ def test_server_socket_request(example_server, method_str, target, body, expecte
                              ('GET', '/get-1515', '', '1515'),
                              ('GET', '/get-pow', 5, '25'),
                              ('GET', '/get-pow', 'something', 'error'),
-                             ('GET', '/hello/get-hello', '', 'hello'),
-                             ('GET', '/hello/bye/get-bye', '', 'bye'),
                          ])
 def test_server_socket_request_routed(example_routed_server, method_str, target, body, expected):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

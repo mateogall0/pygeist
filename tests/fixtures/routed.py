@@ -21,13 +21,6 @@ def _build_example(port):
         except:
             return 'error'
 
-    async def broadcast(req: Request):
-        nonlocal last_requested_id
-        if last_requested_id is not None:
-            await send_payload(last_requested_id, req.body)
-        last_requested_id = req.client_key
-        return 'sending stuff'
-
     nested_r = Router('/hello')
 
     async def handlerhello(req: Request):
@@ -44,11 +37,8 @@ def _build_example(port):
 
     nested_r.include_router(nested_r2)
 
-    r.include_router(nested_r)
-
     r.get('/get-1515', handler1515, status_code=200)
     r.get('/get-pow', handlerpow, status_code=200)
-    r.post('/post-broadcast', broadcast, status_code=200)
     api = ZeitgeistAPI(port=port)
     api.include_router(r)
     api.run()

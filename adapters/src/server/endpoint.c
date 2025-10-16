@@ -40,7 +40,6 @@ run_destroy_endpoints_list(PyObject *self) {
 }
 
 char *py_handler_wrapper(request_t *req, PyObject *py_func) {
-    PyGILState_STATE gstate = PyGILState_Ensure();
     // Wrap raw C pointer in PyCapsule
     PyObject *capsule = PyCapsule_New((void *)req, "request_t", NULL);
     if (!capsule) {
@@ -57,8 +56,6 @@ char *py_handler_wrapper(request_t *req, PyObject *py_func) {
         if (tmp) ret = strdup(tmp);  // dynamically allocate
         Py_DECREF(result);
     }
-
-    PyGILState_Release(gstate);
     return (ret);
 }
 
@@ -122,24 +119,32 @@ char *_handler(request_t *r) {
             PyErr_Print();
             goto fail_args;
         }
-        PyObject *queue_helper = PyImport_ImportModule(ZSERVER_MODULE_NAME ".concurrency.queue");
-        if (!queue_helper) {
-            PyErr_Print();
+
+        PyObject *asyncio = PyImport_ImportModule("asyncio");
+        if (!asyncio) {
+            Py_DECREF(coro);
             goto fail_args;
         }
 
-
-        PyObject *res = PyObject_CallMethod(queue_helper, "push_async", "O", coro);
-        if (!res) {
-            PyErr_Print();
-        } else {
-            Py_DECREF(res);
+        PyObject *run_until_complete = PyObject_GetAttrString(asyncio, "run");
+        if (!run_until_complete) {
+            Py_DECREF(asyncio);
+            Py_DECREF(coro);
+            goto fail_args;
         }
-        Py_XDECREF(coro);
 
-        Py_XDECREF(args);
-        Py_XDECREF(req_inst);
-        goto fail;
+        PyObject *result_args = PyTuple_Pack(1, coro);
+        result = PyObject_CallObject(run_until_complete, result_args);
+
+        Py_DECREF(result_args);
+        Py_DECREF(run_until_complete);
+        Py_DECREF(asyncio);
+        Py_DECREF(coro);
+
+        if (!result) {
+            PyErr_Print();
+            goto fail;
+        }
     } else {
         // sync function: call directly
         result = PyObject_CallObject(handler, args);

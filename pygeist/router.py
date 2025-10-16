@@ -91,7 +91,7 @@ class Router(RouterRigistry):
                 str_result = zex.get_body_result()
             except Exception as exc:
                 print(exc)
-                zex = ZEITException(500, 'Internal server error')
+                zex = ZEITException(500, '500 Internal server error')
                 fres = zex.get_fres(_adapter.SERVER_VERSION, req)
                 str_result = zex.get_body_result()
 
