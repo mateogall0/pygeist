@@ -1,5 +1,6 @@
 #include <Python.h>
 #include "core/include/server/master.h"
+#include "core/include/debug.h"
 #include "core/include/server/static.h"
 #include "core/include/server/api/socket.h"
 #include "core/include/server/api/response.h"
@@ -26,68 +27,25 @@ _handle_input_py(PyObject *self,
 }
 
 void _handle_input(int client_fd) {
-    PyGILState_STATE gstate = PyGILState_Ensure();  // Acquire GIL
+    PyGILState_STATE gstate = PyGILState_Ensure();
+    print_debug("Reached _handle_input\n");
 
-    PyObject *helpers = PyImport_ImportModule(ZSERVER_MODULE_NAME ".concurrency.helpers");
-    if (!helpers) {
-        PyErr_Print();
-        PyGILState_Release(gstate);
-        return;
-    }
-
-    PyObject *run_func = PyObject_GetAttrString(helpers, "run_handler");
-    Py_DECREF(helpers);
-    if (!run_func) {
-        PyErr_Print();
-        PyGILState_Release(gstate);
-        return;
-    }
-
-    PyMethodDef method_def = {
-        "_handle_input_py_temp",
-        _handle_input_py,
-        METH_VARARGS,
-        NULL
-    };
-
-    PyObject *py_handler = PyCFunction_New(&method_def, NULL);
-    if (!py_handler) {
-        Py_DECREF(run_func);
-        PyGILState_Release(gstate);
-        return;
-    }
-
-    PyObject *py_fd = PyLong_FromLong(client_fd);
-    if (!py_fd) {
-        Py_DECREF(py_handler);
-        Py_DECREF(run_func);
-        PyGILState_Release(gstate);
-        return;
-    }
-
-    PyObject *args = PyTuple_Pack(2, py_handler, py_fd);
-    Py_DECREF(py_handler);
-    Py_DECREF(py_fd);
-
+    PyObject *args = PyTuple_Pack(1, PyLong_FromLong(client_fd));
     if (!args) {
         PyErr_Print();
-        Py_DECREF(run_func);
         PyGILState_Release(gstate);
         return;
     }
 
-    PyObject *res = PyObject_CallObject(run_func, args);
+    // Call the C Python function directly
+    PyObject *res = _handle_input_py(NULL, args);
     Py_DECREF(args);
-    Py_DECREF(run_func);
 
-    if (!res)
-        PyErr_Print();
-    else
-        Py_DECREF(res);
+    if (!res) PyErr_Print();
+    else Py_DECREF(res);
 
-    PyGILState_Release(gstate);  // Release GIL
+    PyGILState_Release(gstate);
 }
-
 
 PyObject*
 run_zeitgeist_server_adapter(PyObject *self,
@@ -110,10 +68,13 @@ run_zeitgeist_server_adapter(PyObject *self,
         return (NULL);
     }
 
+    /* Py_BEGIN_ALLOW_THREADS */
     run_core_server_loop(server_port,
                          ZSERVER_SYSTEM_BATCH_SIZE,
                          ZSERVER_SYSTEM_VERBOSE,
                          _handle_input);
+    /* Py_END_ALLOW_THREADS */
+
     Py_RETURN_NONE;
 }
 

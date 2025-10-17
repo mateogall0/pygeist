@@ -13,6 +13,7 @@ def _build_example(port):
     last_requested_id = None
     r = Router('/')
     async def handler1515(req: Request):
+        print('hi from 1515 handler')
         return 1515
 
     async def handlerpow(req: Request):

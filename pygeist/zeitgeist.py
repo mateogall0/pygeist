@@ -4,7 +4,7 @@ from pygeist.registry import (Server,
                               IdlenessHandler,
                               APIMaster,)
 from pygeist.abstract.methods_handler import AMethodsHandler
-from pygeist.concurrency.helpers import set_helper_loop
+from pygeist.concurrency.helpers import worker
 import asyncio
 
 
@@ -32,9 +32,11 @@ class ZeitgeistAPI(_APIRouter):
                  port = 4000,
                  main_prefix='',
                  idleness_max_time = 60,
+                 workers = 2,
                  ) -> None:
         self.port = port
         self.idleness_max_time = idleness_max_time
+        self.workers = workers
         super().__init__(main_prefix)
 
     def _compose(self) -> APIMaster:
@@ -48,16 +50,27 @@ class ZeitgeistAPI(_APIRouter):
             endpoints,
         )
 
-    def _run(self, api_master: APIMaster) -> None:
-        loop = asyncio.new_event_loop()
-        set_helper_loop(loop)
-        asyncio.set_event_loop(loop)
-        loop.create_task(api_master.run())
-        loop.run_forever()
+    async def _run(self,
+                   api_master: APIMaster,
+                   ) -> None:
+        workers = [
+            asyncio.create_task(worker())
+            for _ in range(self.workers)
+        ]
+        server_task = asyncio.create_task(api_master.run())
+        try:
+            await server_task
+        except asyncio.CancelledError:
+            pass
+        finally:
+            for w in workers:
+                w.cancel()
+            await asyncio.gather(*workers,
+                                 return_exceptions=True)
 
     def run(self) -> None:
         api_master = self._compose()
         print(f'Starting server on port {self.port}...')
         print('press Ctrl+C to stop it')
-        self._run(api_master)
+        asyncio.run(self._run(api_master))
         print('\nstopped')

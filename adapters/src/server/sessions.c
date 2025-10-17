@@ -83,6 +83,7 @@ run_set_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
         PyErr_SetString(SessionCreation, "session doesn't exist");
         return (NULL);
     }
+    PyGILState_STATE gstate = PyGILState_Ensure();
 
     PyObject *old = (PyObject*)session->meta;
     if (old)
@@ -90,6 +91,7 @@ run_set_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
 
     Py_INCREF(value);
     session->meta = (uintptr_t)value;
+    PyGILState_Release(gstate);
     return (value);
 }
 

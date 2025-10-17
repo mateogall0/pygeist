@@ -3,6 +3,7 @@
 #include "adapters/include/server/classes.h"
 #include "adapters/include/server/config.h"
 #include "core/include/server/api/endpoint.h"
+#include "core/include/debug.h"
 
 
 PyObject*
@@ -12,11 +13,13 @@ run_init_endpoints_list(PyObject *self) {
     if (endpoints) {
         PyErr_SetString(EndpointsInit,
                         "endpoints list are already initialized");
+        PyGILState_Release(gstate);
         return (NULL);
     }
     if (!init_endpoints_list()) {
         PyErr_SetString(EndpointsInit,
                         "endpoints list couldn't be initialized");
+        PyGILState_Release(gstate);
         return (NULL);
     }
 
@@ -31,6 +34,7 @@ run_destroy_endpoints_list(PyObject *self) {
     if (!endpoints) {
         PyErr_SetString(EndpointsDestruct,
                         "endpoints list is not initialized");
+        PyGILState_Release(gstate);
         return (NULL);
     }
     destroy_endpoints();
@@ -59,8 +63,10 @@ char *py_handler_wrapper(request_t *req, PyObject *py_func) {
     return (ret);
 }
 
+
 char *_handler(request_t *r) {
     PyGILState_STATE gstate = PyGILState_Ensure();
+    print_debug("Reached internal _handler\n");
     char *result_cstr = NULL;
 
     // Build Python Request instance
@@ -74,7 +80,6 @@ char *_handler(request_t *r) {
     if (!req_inst_args)
         goto fail;
 
-
     if (!RequestClass) {
         PyErr_SetString(PyExc_RuntimeError, "RequestClass not initialized!");
         goto fail;
@@ -85,99 +90,73 @@ char *_handler(request_t *r) {
     if (!req_inst)
         goto fail;
 
-    PyObject *args = PyTuple_New(1);
-    if (!args) {
-        Py_DECREF(req_inst);
+    PyObject *args = PyTuple_Pack(1, req_inst);
+    Py_DECREF(req_inst);
+    if (!args)
         goto fail;
-    }
-    Py_INCREF(req_inst);
-    PyTuple_SetItem(args, 0, req_inst);
 
     PyObject *handler = (PyObject *)r->endpoint->meta;
     PyObject *result = NULL;
 
-    // Import inspect module to detect async functions
+    // Detect if async
     PyObject *inspect = PyImport_ImportModule("inspect");
-    if (!inspect) {
-        PyErr_Print();
-        goto fail_args;
-    }
+    if (!inspect) goto fail_args;
 
     PyObject *is_coro_func = PyObject_CallMethod(inspect, "iscoroutinefunction", "O", handler);
     Py_DECREF(inspect);
-    if (!is_coro_func) {
-        PyErr_Print();
-        goto fail_args;
-    }
+    if (!is_coro_func) goto fail_args;
 
     int async_func = PyObject_IsTrue(is_coro_func);
     Py_DECREF(is_coro_func);
 
     if (async_func) {
-        // async function: create coroutine
-        PyObject *coro = PyObject_CallObject(handler, args);
-        if (!coro) {
-            PyErr_Print();
+
+        PyObject *helpers = PyImport_ImportModule(ZSERVER_MODULE_NAME ".concurrency.helpers");
+        if (!helpers) {
             goto fail_args;
         }
 
-        PyObject *asyncio = PyImport_ImportModule("asyncio");
-        if (!asyncio) {
-            Py_DECREF(coro);
+        PyObject *run_handler_func = PyObject_GetAttrString(helpers, "run_handler");
+        Py_DECREF(helpers);
+        if (!run_handler_func) {
+            goto fail_args;
+        }
+        PyObject *run_args = Py_BuildValue("(OO)", handler, req_inst);
+        if (!run_args) {
+            Py_DECREF(run_handler_func);
             goto fail_args;
         }
 
-        PyObject *run_until_complete = PyObject_GetAttrString(asyncio, "run");
-        if (!run_until_complete) {
-            Py_DECREF(asyncio);
-            Py_DECREF(coro);
-            goto fail_args;
-        }
-
-        PyObject *result_args = PyTuple_Pack(1, coro);
-        result = PyObject_CallObject(run_until_complete, result_args);
-
-        Py_DECREF(result_args);
-        Py_DECREF(run_until_complete);
-        Py_DECREF(asyncio);
-        Py_DECREF(coro);
-
-        if (!result) {
-            PyErr_Print();
-            goto fail;
-        }
+        print_debug("About to call async helper from C\n");
+        result = PyObject_CallObject(run_handler_func, run_args);
+        Py_DECREF(run_handler_func);
+        Py_DECREF(run_args);
+        print_debug("Finished call async helper from C\n");
+        // For async, run_handler usually returns None
+        if (result) Py_DECREF(result);
+        result_cstr = strdup("");  // return empty string for async
     } else {
         // sync function: call directly
         result = PyObject_CallObject(handler, args);
+        if (!result) goto fail_args;
+
+        PyObject *str_obj = PyObject_Str(result);
+        Py_DECREF(result);
+        if (!str_obj) goto fail_args;
+
+        const char *tmp = PyUnicode_AsUTF8(str_obj);
+        if (tmp) result_cstr = strdup(tmp);
+        Py_DECREF(str_obj);
     }
 
 fail_args:
     Py_DECREF(args);
-    Py_DECREF(req_inst);
-
-    if (!result) {
-        PyErr_Print();
-        goto fail;
-    }
-
-    // convert result to C string
-    PyObject *str_obj = PyObject_Str(result);
-    Py_DECREF(result);
-    if (!str_obj)
-        goto fail;
-
-    const char *tmp = PyUnicode_AsUTF8(str_obj);
-    if (tmp)
-        result_cstr = strdup(tmp);
-    Py_DECREF(str_obj);
-
-
     PyGILState_Release(gstate);
-    return (result_cstr);
+    return result_cstr;
 
 fail:
     PyGILState_Release(gstate);
-    return (NULL);
+    return NULL;
 }
 
 PyObject*
@@ -217,8 +196,8 @@ run_create_append_endpoint(PyObject *self,
     }
 
     endpoint_t *e = set_endpoint_va(4, method, target, _handler, true);
-    Py_INCREF(py_handler);
     e->meta = (uintptr_t)py_handler;
+    Py_INCREF(py_handler);
 
     Py_RETURN_NONE;
 }

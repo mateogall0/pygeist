@@ -1,20 +1,19 @@
 import asyncio
 
-_loop = None
 
-def set_helper_loop(loop):
-    global _loop
-    _loop = loop
+job_queue = asyncio.Queue()
 
+
+async def worker():
+    while True:
+        func, args, kwargs = await job_queue.get()
+        try:
+            result = await func(*args, **kwargs)
+        except Exception as e:
+            print(f"Job failed: {e}")
+        finally:
+            job_queue.task_done()
 
 def run_handler(func, *ag, **kw):
-    return func(*ag, **kw)
-    # async def wrapper():
-    #     return await asyncio.to_thread(func, *ag, **kw)
-
-    # global _loop
-    # if _loop is None:
-    #     raise RuntimeError("Helper loop not set")
-
-    # # thread-safe scheduling
-    # _loop.call_soon_threadsafe(asyncio.create_task, wrapper())
+    asyncio.run(func(*ag, **kw))
+    # job_queue.put_nowait((func, ag, kw))

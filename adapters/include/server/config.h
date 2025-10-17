@@ -3,8 +3,10 @@
 
 #include <Python.h>
 
-#ifndef ZSERVER_SYSTEM_VERBOSE
-#define ZSERVER_SYSTEM_VERBOSE false
+#ifdef DEBUG
+    #define ZSERVER_SYSTEM_VERBOSE true
+#else
+    #define ZSERVER_SYSTEM_VERBOSE false
 #endif
 
 #define ZSERVER_MODULE_NAME "pygeist"

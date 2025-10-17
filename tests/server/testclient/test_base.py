@@ -13,8 +13,11 @@ import pytest
 ])
 def test_request(app, target, status_code, expected):
     client = TestClient(app)
+    print('before link')
     client.link()
+    print('after link')
     res = client.get(target)
+    print('after get')
     assert res.status_code == status_code
     assert res.body == expected, res
     client.unlink()
