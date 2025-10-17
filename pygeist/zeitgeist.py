@@ -4,6 +4,7 @@ from pygeist.registry import (Server,
                               IdlenessHandler,
                               APIMaster,)
 from pygeist.abstract.methods_handler import AMethodsHandler
+from pygeist.concurrency.helpers import set_helper_loop
 import asyncio
 
 
@@ -47,13 +48,12 @@ class ZeitgeistAPI(_APIRouter):
             endpoints,
         )
 
-    def _run(self,
-             api_master: APIMaster,
-             ) -> None:
+    def _run(self, api_master: APIMaster) -> None:
         loop = asyncio.new_event_loop()
+        set_helper_loop(loop)
         asyncio.set_event_loop(loop)
-        loop.run_until_complete(api_master.run())
-        loop.close()
+        loop.create_task(api_master.run())
+        loop.run_forever()
 
     def run(self) -> None:
         api_master = self._compose()

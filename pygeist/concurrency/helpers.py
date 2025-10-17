@@ -1,18 +1,20 @@
 import asyncio
 
+_loop = None
 
-def run_handler(func, *args, **kwargs):
-    if asyncio.iscoroutinefunction(func):
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = None
+def set_helper_loop(loop):
+    global _loop
+    _loop = loop
 
-        coro = func(*args, **kwargs)
 
-        if loop and loop.is_running():
-            loop.create_task(coro)
-        else:
-            asyncio.run(coro)
-        return None
-    return func(*args, **kwargs)
+def run_handler(func, *ag, **kw):
+    return func(*ag, **kw)
+    # async def wrapper():
+    #     return await asyncio.to_thread(func, *ag, **kw)
+
+    # global _loop
+    # if _loop is None:
+    #     raise RuntimeError("Helper loop not set")
+
+    # # thread-safe scheduling
+    # _loop.call_soon_threadsafe(asyncio.create_task, wrapper())
