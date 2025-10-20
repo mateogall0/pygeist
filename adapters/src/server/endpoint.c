@@ -45,8 +45,10 @@ run_destroy_endpoints_list(PyObject *self) {
 
 char *py_handler_wrapper(request_t *req, PyObject *py_func) {
     // Wrap raw C pointer in PyCapsule
+    PyGILState_STATE gstate = PyGILState_Ensure();
     PyObject *capsule = PyCapsule_New((void *)req, "request_t", NULL);
     if (!capsule) {
+        PyGILState_Release(gstate);
         return (NULL);
     }
 
@@ -58,8 +60,10 @@ char *py_handler_wrapper(request_t *req, PyObject *py_func) {
     if (result && PyUnicode_Check(result)) {
         const char *tmp = PyUnicode_AsUTF8(result);
         if (tmp) ret = strdup(tmp);  // dynamically allocate
+
         Py_DECREF(result);
     }
+    PyGILState_Release(gstate);
     return (ret);
 }
 
@@ -133,7 +137,6 @@ char *_handler(request_t *r) {
         Py_DECREF(run_args);
         print_debug("Finished call async helper from C\n");
         // For async, run_handler usually returns None
-        if (result) Py_DECREF(result);
         result_cstr = strdup("");  // return empty string for async
     } else {
         // sync function: call directly
@@ -152,10 +155,12 @@ char *_handler(request_t *r) {
 fail_args:
     Py_DECREF(args);
     PyGILState_Release(gstate);
+    print_debug("Finished internal endpoint process\n");
     return result_cstr;
 
 fail:
     PyGILState_Release(gstate);
+    print_debug("(fail) Finished internal endpoint process\n");
     return NULL;
 }
 

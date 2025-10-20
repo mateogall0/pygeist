@@ -57,12 +57,14 @@ class ZeitgeistAPI(_APIRouter):
             asyncio.create_task(worker())
             for _ in range(self.workers)
         ]
+
         server_task = asyncio.create_task(api_master.run())
         try:
             await server_task
         except asyncio.CancelledError:
             pass
         finally:
+            pass
             for w in workers:
                 w.cancel()
             await asyncio.gather(*workers,
