@@ -43,27 +43,22 @@ run_destroy_endpoints_list(PyObject *self) {
     Py_RETURN_NONE;
 }
 
-char *py_handler_wrapper(request_t *req, PyObject *py_func) {
-    // Wrap raw C pointer in PyCapsule
-    PyGILState_STATE gstate = PyGILState_Ensure();
+char *
+py_handler_wrapper(request_t *req, PyObject *py_func) {
     PyObject *capsule = PyCapsule_New((void *)req, "request_t", NULL);
     if (!capsule) {
-        PyGILState_Release(gstate);
         return (NULL);
     }
 
-    // Call Python function with the capsule
     PyObject *result = PyObject_CallFunctionObjArgs(py_func, capsule, NULL);
     Py_DECREF(capsule);
 
     char *ret = NULL;
     if (result && PyUnicode_Check(result)) {
         const char *tmp = PyUnicode_AsUTF8(result);
-        if (tmp) ret = strdup(tmp);  // dynamically allocate
+        if (tmp) ret = strdup(tmp);
 
-        Py_DECREF(result);
     }
-    PyGILState_Release(gstate);
     return (ret);
 }
 
@@ -73,7 +68,6 @@ char *_handler(request_t *r) {
     print_debug("Reached internal _handler\n");
     char *result_cstr = NULL;
 
-    // Build Python Request instance
     PyObject *req_inst_args = Py_BuildValue("(isssik)",
                                             r->method,
                                             r->target,
