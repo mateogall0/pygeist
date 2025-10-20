@@ -31,6 +31,7 @@ void _handle_input(int client_fd) {
     print_debug("Reached _handle_input\n");
 
     PyGILState_STATE gstate = PyGILState_Ensure();
+    print_debug("_handle_input: grabbed GIL\n");
 
     PyObject *helpers = PyImport_ImportModule(ZSERVER_MODULE_NAME ".concurrency.helpers");
     if (!helpers) {
@@ -72,7 +73,9 @@ void _handle_input(int client_fd) {
         return;
     }
 
+    print_debug("Before calling enqueue_fd\n");
     PyObject *result = PyObject_CallObject(enqueue_fd_func, args);
+    print_debug("After calling enqueue_fd\n");
     Py_DECREF(args);
     Py_DECREF(enqueue_fd_func);
 

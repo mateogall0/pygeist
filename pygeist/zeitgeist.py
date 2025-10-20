@@ -4,7 +4,6 @@ from pygeist.registry import (Server,
                               IdlenessHandler,
                               APIMaster,)
 from pygeist.abstract.methods_handler import AMethodsHandler
-from pygeist.concurrency.helpers import worker
 import asyncio
 
 
@@ -53,22 +52,11 @@ class ZeitgeistAPI(_APIRouter):
     async def _run(self,
                    api_master: APIMaster,
                    ) -> None:
-        workers = [
-            asyncio.create_task(worker())
-            for _ in range(self.workers)
-        ]
-
         server_task = asyncio.create_task(api_master.run())
         try:
             await server_task
         except asyncio.CancelledError:
             pass
-        finally:
-            pass
-            for w in workers:
-                w.cancel()
-            await asyncio.gather(*workers,
-                                 return_exceptions=True)
 
     def run(self) -> None:
         api_master = self._compose()

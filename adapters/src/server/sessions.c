@@ -76,14 +76,13 @@ run_set_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
         return (NULL);
 
     connected_session_t *session = NULL;
-    /* Py_BEGIN_ALLOW_THREADS */
+    Py_BEGIN_ALLOW_THREADS
     session = get_connected_session(id);
-    /* Py_END_ALLOW_THREADS */
+    Py_END_ALLOW_THREADS
     if (!session) {
         PyErr_SetString(SessionCreation, "session doesn't exist");
         return (NULL);
     }
-    PyGILState_STATE gstate = PyGILState_Ensure();
 
     PyObject *old = (PyObject*)session->meta;
     if (old)
@@ -91,7 +90,6 @@ run_set_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
 
     Py_INCREF(value);
     session->meta = (uintptr_t)value;
-    PyGILState_Release(gstate);
     return (value);
 }
 
@@ -114,12 +112,11 @@ run_get_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
         return (NULL);
 
     connected_session_t *session = NULL;
-    /* Py_BEGIN_ALLOW_THREADS */
+    Py_BEGIN_ALLOW_THREADS
     session = get_connected_session(id);
-    /* Py_END_ALLOW_THREADS */
+    Py_END_ALLOW_THREADS
 
     PyObject *value = NULL;
-    PyGILState_STATE gstate = PyGILState_Ensure();
     value = (PyObject*)session->meta;
     if (!value) {
         Py_INCREF(Py_None);
@@ -127,7 +124,6 @@ run_get_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
     } else {
         Py_INCREF(value);
     }
-    PyGILState_Release(gstate);
     return value;
 }
 
@@ -157,18 +153,18 @@ run_send_unrequested_payload(PyObject *self, PyObject *args, PyObject *kwargs) {
     }
 
     connected_session_t *session = NULL;
-    /* Py_BEGIN_ALLOW_THREADS */
+    Py_BEGIN_ALLOW_THREADS
     session = get_connected_session(id);
-    /* Py_END_ALLOW_THREADS */
+    Py_END_ALLOW_THREADS
     if (!session) {
         PyErr_SetString(SessionCreation, "session doesn't exist");
         return (NULL);
     }
     print_debug("Sending the payload from Python: %s\n", payload);
-    /* Py_BEGIN_ALLOW_THREADS */
+    Py_BEGIN_ALLOW_THREADS
     size_t payload_size = (size_t)payload_len_size;
     send_unrequested_payload(id, payload, payload_size);
-    /* Py_END_ALLOW_THREADS */
+    Py_END_ALLOW_THREADS
 
     print_debug("Sent the payload from Python: %s\n", payload);
 
