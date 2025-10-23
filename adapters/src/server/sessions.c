@@ -161,8 +161,9 @@ run_send_unrequested_payload(PyObject *self, PyObject *args, PyObject *kwargs) {
         return (NULL);
     }
     print_debug("Sending the payload from Python: %s\n", payload);
-    Py_BEGIN_ALLOW_THREADS
     size_t payload_size = (size_t)payload_len_size;
+
+    Py_BEGIN_ALLOW_THREADS
     send_unrequested_payload(id, payload, payload_size);
     Py_END_ALLOW_THREADS
 

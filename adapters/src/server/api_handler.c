@@ -11,21 +11,21 @@
 #include <stdbool.h>
 
 PyObject *
-py_respond(PyObject *self, PyObject *args, PyObject *kwargs) {
+run_respond(PyObject *self, PyObject *args, PyObject *kwargs) {
+    (void)self;
     int client_fd;
 
     static char *kwlist[] = {"fd", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "i", kwlist, &client_fd)) {
         return NULL;
     }
-
     Py_BEGIN_ALLOW_THREADS
-    respond(client_fd);
-    Py_END_ALLOW_THREADS
 
+    respond(client_fd);
+
+    Py_END_ALLOW_THREADS
     Py_RETURN_NONE;
 }
-
 
 void _handle_input(int client_fd) {
     print_debug("Reached _handle_input\n");
@@ -75,25 +75,28 @@ void _handle_input(int client_fd) {
 
     print_debug("Before calling enqueue_fd\n");
     PyObject *result = PyObject_CallObject(enqueue_fd_func, args);
+    if (!result) {
+        PyErr_Print();
+    } else {
+        Py_DECREF(result);
+    }
     print_debug("After calling enqueue_fd\n");
     Py_DECREF(args);
     Py_DECREF(enqueue_fd_func);
 
-    if (!result)
-        PyErr_Print();
-    else
-        Py_DECREF(result);
-
-    PyGILState_Release(gstate);
     print_debug("Exiting _handle_input\n");
+    PyGILState_Release(gstate);
 }
-
 
 PyObject*
 run_zeitgeist_server_adapter(PyObject *self,
                              PyObject *args,
                              PyObject *kwargs) {
     (void)self;
+    if (!Py_IsInitialized()) {
+        Py_Initialize();
+    }
+
     if (ssc) {
         PyErr_SetString(ServerAlreadyStarted, "server already initialized");
         return (NULL);

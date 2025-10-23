@@ -60,7 +60,7 @@ static PyMethodDef AdapterMethods[] = {
      METH_VARARGS | METH_KEYWORDS,
      "Create an endpoint and append it to the endpoints list"},
     {"_respond",
-     py_respond,
+     run_respond,
      METH_VARARGS | METH_KEYWORDS,
      "Wrapper for respond"},
     {NULL, NULL, 0, NULL}

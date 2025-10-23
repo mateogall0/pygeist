@@ -1,10 +1,12 @@
 from pygeist.zeitgeist import ZeitgeistAPI
-from pygeist.abstract.methods_handler import AMethodsHandler
+from pygeist.abstract.methods_handler import AAsyncMethodsHandler
 import multiprocessing
 import socket
 import time
 import json
 import weakref
+import asyncio
+import threading
 
 
 def _runner(app):
@@ -42,18 +44,18 @@ class Response:
     __repr__ = __str__
 
 
-class TestClient(AMethodsHandler):
+class TestClient(AAsyncMethodsHandler):
     __test__ = False  # tells pytest to not collect this
 
-    def __init__(self,
-                 app: ZeitgeistAPI,
-                 buff_size=8192,
-                 ) -> None:
+    def __init__(self, app, buff_size=8192):
         self.app = app
         self.buff_size = buff_size
-        self.sock = None
+        self.reader = None
+        self.writer = None
+
         self.server_process = multiprocessing.Process(target=_runner,
-                                                 args=(self.app,))
+                                                      args=(self.app,),
+                                                      daemon=True,)
         self.server_process.start()
 
         for _ in range(50):
@@ -69,17 +71,20 @@ class TestClient(AMethodsHandler):
 
         self._finalizer = weakref.finalize(self, self._cleanup_server, self.server_process)
 
-    def _method_handler(self,
-                        *ag,
-                        **kw,
-                        ) -> Response:
-        return self.send_receive(*ag, **kw)
+    async def _method_handler(self,
+                              *ag,
+                              **kw,
+                              ) -> Response:
+        return await self.send_receive(*ag, **kw)
 
-    def link(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect(("localhost", self.app.port))
+    async def link(self):
+        reader, writer = await asyncio.open_connection("localhost",
+                                                       self.app.port)
+        self.reader = reader
+        self.writer = writer
 
-    def send_receive(self,
+
+    async def send_receive(self,
                      method: str,
                      target: str,
                      headers: dict = {},
@@ -87,14 +92,18 @@ class TestClient(AMethodsHandler):
                      data='') -> Response:
         headers_str = ''.join(f'\r\n{k}: {v}' for k, v in headers.items())
         payload = f"{method.upper()} {target}{headers_str}\r\n\r\n{data}".encode()
-        self.sock.sendall(payload)
-        response_data = self.sock.recv(self.buff_size)
+        self.writer.write(payload)
+        await self.writer.drain()
+        print('testclient now waiting for response...')
+        response_data = await self.reader.read(self.buff_size)
         return Response(response_data, _process)
 
-    def unlink(self):
-        if self.sock:
-            self.sock.close()
-            self.sock = None
+    async def unlink(self):
+        if self.writer:
+            self.writer.close()
+            await self.writer.wait_closed()
+            self.writer = None
+            self.reader = None
 
     @staticmethod
     def _cleanup_server(proc):

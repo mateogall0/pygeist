@@ -96,7 +96,6 @@ class Router(RouterRigistry):
                 str_result = zex.get_body_result()
 
             await send_payload(req.client_key, fres)
-            return str_result
 
         self._buff.append((method, target, wrapped_handler, ag, kw))
 

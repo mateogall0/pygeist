@@ -11,13 +11,14 @@ import pytest
     ('/nonexistent_route', 404, '404 Resource not found'),
     ('/unhandled', 500, '500 Internal server error')
 ])
-def test_request(app, target, status_code, expected):
+@pytest.mark.asyncio
+async def test_request(app, target, status_code, expected):
     client = TestClient(app)
     print('before link')
-    client.link()
+    await client.link()
     print('after link')
-    res = client.get(target)
+    res = await client.get(target)
     print('after get')
     assert res.status_code == status_code
     assert res.body == expected, res
-    client.unlink()
+    await client.unlink()
