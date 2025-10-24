@@ -66,7 +66,7 @@ class TestClient(AAsyncMethodsHandler):
                                                       daemon=True,)
         self.server_process.start()
 
-        for _ in range(50):
+        for _ in range(500):
             try:
                 with socket.create_connection(("127.0.0.1",
                                                self.app.port),
@@ -90,7 +90,6 @@ class TestClient(AAsyncMethodsHandler):
                                                        self.app.port)
         self.reader = reader
         self.writer = writer
-
 
     async def send_receive(self,
                            method: str,
