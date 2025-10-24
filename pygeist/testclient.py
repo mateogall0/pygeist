@@ -47,11 +47,19 @@ class Response:
 class TestClient(AAsyncMethodsHandler):
     __test__ = False  # tells pytest to not collect this
 
-    def __init__(self, app, buff_size=8192):
+    def __init__(self,
+                 app,
+                 buff_size=8192,
+                 create_server=True,
+                 ) -> None:
         self.app = app
         self.buff_size = buff_size
         self.reader = None
         self.writer = None
+        self.create_server = create_server
+
+        if not self.create_server:
+            return
 
         self.server_process = multiprocessing.Process(target=_runner,
                                                       args=(self.app,),
@@ -85,11 +93,12 @@ class TestClient(AAsyncMethodsHandler):
 
 
     async def send_receive(self,
-                     method: str,
-                     target: str,
-                     headers: dict = {},
-                     _process=True,
-                     data='') -> Response:
+                           method: str,
+                           target: str,
+                           headers: dict = {},
+                           _process=True,
+                           data='',
+                           ) -> Response:
         headers_str = ''.join(f'\r\n{k}: {v}' for k, v in headers.items())
         payload = f"{method.upper()} {target}{headers_str}\r\n\r\n{data}".encode()
         self.writer.write(payload)
@@ -112,6 +121,8 @@ class TestClient(AAsyncMethodsHandler):
             proc.join()
 
     def stop_server(self):
+        if not self.create_server:
+            return
         self._cleanup_server(self.server_process)
         self._finalizer.detach()
 

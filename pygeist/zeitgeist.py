@@ -33,7 +33,7 @@ class ZeitgeistAPI(_APIRouter):
                  port = 4000,
                  main_prefix='',
                  idleness_max_time = 60,
-                 workers = 2,
+                 workers = 4,
                  ) -> None:
         self.port = port
         self.idleness_max_time = idleness_max_time
@@ -56,10 +56,10 @@ class ZeitgeistAPI(_APIRouter):
                    ) -> None:
 
         set_helper_loop(asyncio.get_event_loop())
+        worker_tasks = [worker() for _ in range(self.workers)]
+
         await asyncio.gather(
-            worker(),
-            worker(),
-            worker(),
+            *worker_tasks,
             api_master.run(),
         )
 
