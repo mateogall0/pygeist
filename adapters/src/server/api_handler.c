@@ -77,6 +77,7 @@ void _handle_input(int client_fd) {
     PyObject *result = PyObject_CallObject(enqueue_fd_func, args);
     if (!result) {
         PyErr_Print();
+
     } else {
         Py_DECREF(result);
     }

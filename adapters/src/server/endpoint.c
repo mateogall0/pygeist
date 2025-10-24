@@ -37,6 +37,7 @@ run_destroy_endpoints_list(PyObject *self) {
 }
 
 char *_handler(request_t *r) {
+    print_debug("Internal handler before getting the GIL\n");
     PyGILState_STATE gstate = PyGILState_Ensure();
     print_debug("Reached internal _handler\n");
 
