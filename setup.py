@@ -2,9 +2,9 @@ from setuptools import setup, find_packages
 
 setup(
     name="pygeist",
-    version="0.2.0",
+    version="0.3.0",
     packages=find_packages(include=["pygeist*"]),
-    python_requires=">=3.10",
+    python_requires=">=3.9",
     install_requires=[],
     include_package_data=True,
     description="Pygeist server package",

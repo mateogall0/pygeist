@@ -1,4 +1,3 @@
-from pygeist.zeitgeist import ZeitgeistAPI
 from pygeist.abstract.methods_handler import AAsyncMethodsHandler
 import multiprocessing
 import socket
@@ -7,7 +6,7 @@ import json
 import weakref
 import asyncio
 import threading
-
+from typing import Union, Optional
 
 def _runner(app):
     app.run()
@@ -28,11 +27,11 @@ class Response:
         self.body = content
 
     @property
-    def body(self) -> dict | str | None:
+    def body(self) -> Optional[Union[dict, str]]:
         return self._body
 
     @body.setter
-    def body(self, body: dict | str | None) -> None:
+    def body(self, body: Optional[Union[dict, str]]) -> None:
         try:
             self._body = json.loads(body)
         except (json.JSONDecodeError, TypeError):

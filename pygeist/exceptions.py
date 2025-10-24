@@ -1,6 +1,7 @@
 from pygeist.request import Request
 from pygeist.utils.status_code import verify_status_code
 import json
+from typing import Optional, Union
 
 
 class ZeitgeistServerException(Exception):
@@ -27,7 +28,7 @@ class EndpointsDestruct(ZeitgeistServerException):
 class ZEITException(ZeitgeistServerException):
     def __init__(self,
                  status_code: int,
-                 detail: dict | str | None = '',
+                 detail: Optional[Union[dict, str]] = '',
                  ) -> None:
         self.status_code = status_code
         self.detail = detail
