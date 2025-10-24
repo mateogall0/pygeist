@@ -4,7 +4,7 @@ from pygeist.registry import (Server,
                               IdlenessHandler,
                               APIMaster,)
 from pygeist.abstract.methods_handler import AMethodsHandler
-from pygeist.concurrency.helpers import worker
+from pygeist.concurrency.helpers import worker, set_helper_loop
 import asyncio
 import threading
 
@@ -55,6 +55,7 @@ class ZeitgeistAPI(_APIRouter):
                    api_master: APIMaster,
                    ) -> None:
 
+        set_helper_loop(asyncio.get_event_loop())
         await asyncio.gather(
             worker(),
             worker(),

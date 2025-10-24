@@ -3,13 +3,11 @@ import threading
 import os
 
 job_queue = asyncio.Queue()
-
+_loop = None
 
 async def worker():
     while True:
-        await asyncio.sleep(0.01)
         func, args, kwargs = await job_queue.get()
-        print(func, args, kwargs)
         try:
             result = await func(*args, **kwargs)
         except Exception as e:
@@ -18,8 +16,13 @@ async def worker():
             job_queue.task_done()
 
 def run_handler(func, *ag, **kw):
-    job_queue.put_nowait((func, ag, kw))
+    global _loop
+    asyncio.run_coroutine_threadsafe(job_queue.put((func, ag, kw)),
+                                     _loop)
 
 def enqueue_fd(fd, handler):
     return handler(fd)
-    threading.Thread(target=handler, args=(fd,), daemon=False).start()
+
+def set_helper_loop(loop):
+    global _loop
+    _loop = loop
