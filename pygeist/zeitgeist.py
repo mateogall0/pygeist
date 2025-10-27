@@ -1,12 +1,11 @@
 from pygeist.router import Endpoints, Router
-from pygeist.utils.singleton import singleton_class
 from pygeist.registry import (Server,
                               IdlenessHandler,
                               APIMaster,)
 from pygeist.abstract.methods_handler import AMethodsHandler
 from pygeist.concurrency.helpers import worker, set_helper_loop
 import asyncio
-import threading
+from .predefined_routes import info_retriever
 
 
 class _APIRouter(AMethodsHandler):
@@ -41,6 +40,13 @@ class ZeitgeistAPI(_APIRouter):
         super().__init__(main_prefix)
 
     def _compose(self) -> APIMaster:
+        info_retriever.set_info({
+            'idleness_max_time': self.idleness_max_time,
+        })
+        self.get('/meta',
+                 info_retriever.info_retriever_handler,
+                 status_code=200,)
+
         server = Server(self.port)
         endpoints = Endpoints()
         self.init_endpoints()

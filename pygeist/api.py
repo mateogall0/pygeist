@@ -1,4 +1,3 @@
-from pygeist.utils.singleton import singleton_class
 from pygeist.abstract.api import AServer
 from pygeist.abstract.idleness_handler import AIdlenessHandler
 from pygeist.abstract.endpoint import AEndpoints
