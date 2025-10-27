@@ -20,8 +20,12 @@ def app(zeit_app):
         raise TypeError('An errorr')
 
     async def slow_handler(req: Request):
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.5)
         return "done"
+
+    async def echo_handler(req: Request):
+        await asyncio.sleep(0.5)
+        return req.body
 
     zeit_app.get('/', main, status_code=200)
     zeit_app.post('/p', main, status_code=200)
@@ -29,4 +33,5 @@ def app(zeit_app):
     zeit_app.get('/exception', main_with_exception, status_code=200)
     zeit_app.get('/unhandled', main_with_unhandled, status_code=200)
     zeit_app.get('/async', slow_handler, status_code=200)
+    zeit_app.get('/async_echo', echo_handler, status_code=200)
     yield zeit_app
