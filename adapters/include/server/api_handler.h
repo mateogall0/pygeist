@@ -5,9 +5,6 @@
 
 extern PyObject *global_executor;
 
-PyObject *
-run_respond(PyObject *self, PyObject *args, PyObject *kwargs);
-
 PyObject*
 run_zeitgeist_server_adapter(PyObject *self, PyObject *args, PyObject *kwargs);
 
