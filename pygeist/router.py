@@ -6,6 +6,7 @@ from pygeist.request import Request
 from .sessions import send_payload
 from pygeist.abstract.methods_handler import AMethodsHandler
 import json
+from pygeist.utils import signature as sig_util
 
 
 class Endpoints(AEndpoints):
@@ -74,15 +75,22 @@ class Router(RouterRigistry):
                         target: str,
                         handler: Callable,
                         status_code: int,
+                        response_model: type | None = None,
                         *ag,
                         **kw,
                         ) -> None:
+        params, _ = sig_util.process_signature(handler)
+
         async def wrapped_handler(req: Request):
+            _ret = wrapped_handler.ret
             try:
                 result = await handler(req)
+                if _ret is not None:
+                    result = _ret(result)
                 str_result = result if isinstance(result, str) else json.dumps(result)
+                sver = _adapter.SERVER_VERSION
                 fres = (
-                    f"{_adapter.SERVER_VERSION} {status_code} {req.rid}\r\n"
+                    f"{sver} {status_code} {req.rid}\r\n"
                     f"Content-Length: {len(str_result)}\r\n\r\n"
                     f"{str_result}"
                 )
@@ -97,6 +105,8 @@ class Router(RouterRigistry):
 
             await send_payload(req.client_key, fres)
             return str_result
+
+        wrapped_handler.ret = response_model
 
         self._buff.append((method, target, wrapped_handler, ag, kw))
 
