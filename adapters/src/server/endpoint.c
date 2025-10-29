@@ -41,12 +41,13 @@ char *_handler(request_t *r) {
     PyGILState_STATE gstate = PyGILState_Ensure();
     print_debug("Reached internal _handler\n");
 
-    PyObject *req_inst_args = Py_BuildValue("(isssik)",
+    PyObject *req_inst_args = Py_BuildValue("(isssisk)",
                                             r->method,
                                             r->target,
                                             r->body,
                                             r->headers,
                                             r->client_fd,
+                                            r->query_params,
                                             r->id);
     if (!req_inst_args)
         goto fail;

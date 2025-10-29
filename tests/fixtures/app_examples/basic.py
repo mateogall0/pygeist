@@ -27,6 +27,9 @@ def app(zeit_app):
         await asyncio.sleep(0.5)
         return req.body
 
+    async def echo_query_params(req: Request):
+        return req.query_params
+
     zeit_app.get('/', main, status_code=200)
     zeit_app.post('/p', main, status_code=200)
     zeit_app.get('/s', main_str_json, status_code=200)
@@ -34,4 +37,5 @@ def app(zeit_app):
     zeit_app.get('/unhandled', main_with_unhandled, status_code=200)
     zeit_app.get('/async', slow_handler, status_code=200)
     zeit_app.get('/async_echo', echo_handler, status_code=200)
+    zeit_app.get('/echo_params', echo_query_params, status_code=200)
     yield zeit_app
