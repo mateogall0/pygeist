@@ -98,6 +98,8 @@ class TestClient(AAsyncMethodsHandler):
                            data='',
                            ) -> Response:
         headers_str = ''.join(f'\r\n{k}: {v}' for k, v in headers.items())
+        if isinstance(data, dict):
+            data = json.dumps(data)
         payload = f"{method.upper()} {target}{headers_str}\r\n\r\n{data}".encode()
         self.writer.write(payload)
         await self.writer.drain()

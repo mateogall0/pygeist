@@ -83,8 +83,12 @@ class Router(RouterRigistry):
 
         async def wrapped_handler(req: Request):
             _ret = wrapped_handler.ret
+            _params = wrapped_handler.params
+
             try:
-                result = await handler(req)
+                kw = await sig_util.params_filter(_params, req)
+                result = await handler(**kw)
+
                 if _ret is not None:
                     result = _ret(result)
                 str_result = result if isinstance(result, str) else json.dumps(result)
@@ -104,9 +108,9 @@ class Router(RouterRigistry):
                 str_result = zex.get_body_result()
 
             await send_payload(req.client_key, fres)
-            return str_result
 
         wrapped_handler.ret = response_model
+        wrapped_handler.params = params
 
         self._buff.append((method, target, wrapped_handler, ag, kw))
 

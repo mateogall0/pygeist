@@ -11,8 +11,12 @@ def app(zeit_app):
         name: str
         age: int
 
-    async def main(req: Request):
+    async def main():
         return {'name': 'test', 'age': 21}
 
+    async def is_adult(u: UserModel):
+        return u.age >= 18
+
     zeit_app.get('/', main, status_code=200, response_model=UserModel)
+    zeit_app.get('/isadult', is_adult, status_code=200)
     yield zeit_app

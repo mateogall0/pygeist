@@ -1,5 +1,7 @@
 import inspect
-from typing import Callable
+from typing import Callable, Any
+from pygeist.request import Request
+from pydantic import BaseModel
 
 
 def process_signature(handler: Callable,
@@ -18,3 +20,17 @@ def process_signature(handler: Callable,
         return_annotation = None
 
     return params, return_annotation
+
+
+async def params_filter(params: dict[str, type],
+                        req: Request,
+                        ) -> dict[str, Any]:
+    kw = {}
+    for k, v in params.items():
+        if v == Request:
+            kw[k] = req
+        elif issubclass(v, BaseModel):
+            kw[k] = v(**req.body)
+        elif v == dict:
+            kw[k] = req.body
+    return kw
