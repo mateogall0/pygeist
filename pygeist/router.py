@@ -86,7 +86,11 @@ class Router(RouterRigistry):
             _params = wrapped_handler.params
 
             try:
-                kw = await sig_util.params_filter(_params, req)
+                try:
+                    kw = await sig_util.params_filter(_params, req)
+                except (ValueError, TypeError, KeyError, IndexError) as e:
+                    print(e)
+                    raise ZEITException(422, '422 Unprocessable entity')
                 result = await handler(**kw)
 
                 if _ret is not None:
