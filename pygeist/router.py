@@ -6,8 +6,8 @@ from pygeist.request import Request
 from .sessions import send_payload
 from pygeist.abstract.methods_handler import AMethodsHandler
 import json
+import traceback
 from pygeist.utils import signature as sig_util
-
 
 class Endpoints(AEndpoints):
     def __del__(self) -> None:
@@ -88,9 +88,9 @@ class Router(RouterRigistry):
             try:
                 try:
                     kw = await sig_util.params_filter(_params, req)
-                except (ValueError, TypeError, KeyError, IndexError) as e:
-                    print(e)
+                except (ValueError, TypeError, KeyError, IndexError):
                     raise ZEITException(422, '422 Unprocessable entity')
+
                 result = await handler(**kw)
 
                 if _ret is not None:
@@ -105,8 +105,8 @@ class Router(RouterRigistry):
             except ZEITException as zex:
                 fres = zex.get_fres(_adapter.SERVER_VERSION, req)
                 str_result = zex.get_body_result()
-            except Exception as exc:
-                print(exc)
+            except Exception:
+                traceback.print_exc()
                 zex = ZEITException(500, '500 Internal server error')
                 fres = zex.get_fres(_adapter.SERVER_VERSION, req)
                 str_result = zex.get_body_result()

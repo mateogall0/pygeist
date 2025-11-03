@@ -75,6 +75,8 @@ run_set_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
             &id, &value))
         return (NULL);
 
+    print_debug("Set session object: %i\n", id);
+
     connected_session_t *session = NULL;
     Py_BEGIN_ALLOW_THREADS
     session = get_connected_session(id);
@@ -84,9 +86,11 @@ run_set_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
         return (NULL);
     }
 
-    PyObject *old = (PyObject*)session->meta;
-    if (old)
-        Py_DECREF(old);
+    PyObject *old = (PyObject *)session->meta;
+    Py_XDECREF(old);
+
+    Py_INCREF(value);
+    session->meta = (uintptr_t)value;
 
     Py_INCREF(value);
     session->meta = (uintptr_t)value;
@@ -111,6 +115,8 @@ run_get_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
             &id))
         return (NULL);
 
+    print_debug("Get session object: %i\n", id);
+
     connected_session_t *session = NULL;
     Py_BEGIN_ALLOW_THREADS
     session = get_connected_session(id);
@@ -119,11 +125,9 @@ run_get_session_object(PyObject *self, PyObject *args, PyObject *kwargs) {
     PyObject *value = NULL;
     value = (PyObject*)session->meta;
     if (!value) {
-        Py_INCREF(Py_None);
-        value = Py_None;
-    } else {
-        Py_INCREF(value);
+        Py_RETURN_NONE;
     }
+    Py_INCREF(value);
     return value;
 }
 
