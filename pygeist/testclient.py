@@ -84,10 +84,9 @@ class TestClient(AAsyncMethodsHandler):
                               ) -> Response:
         return await self.send_receive(*ag, **kw)
 
-    async def link(self, port=None):
-        _port = self.app.port if port is None else port
+    async def link(self):
         reader, writer = await asyncio.open_connection("localhost",
-                                                       _port)
+                                                       self.app.port)
         self.reader = reader
         self.writer = writer
 

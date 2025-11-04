@@ -82,9 +82,12 @@ async def test_cli_brute_basic(batch_size: int, clients_count: int):
         raise RuntimeError("server did not start in time")
 
     clients = []
+    class Dummy:
+        def __init__(self, port) -> None:
+            self.port = port
     for _ in range(clients_count):
-        c = TestClient(None, create_server=False)
-        await c.link(port=port)
+        c = TestClient(Dummy(port), create_server=False)
+        await c.link()
 
     for c in clients:
         res = await c.get('/')
