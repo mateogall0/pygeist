@@ -62,7 +62,7 @@ class TestClient(AAsyncMethodsHandler):
 
         self.server_process = multiprocessing.Process(target=_runner,
                                                       args=(self.app,),
-                                                      daemon=True,)
+                                                      daemon=False,)
         self.server_process.start()
 
         for _ in range(500):
