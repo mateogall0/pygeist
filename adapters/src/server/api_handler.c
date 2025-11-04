@@ -29,11 +29,12 @@ run_zeitgeist_server_adapter(PyObject *self,
 
     if (!PyArg_ParseTupleAndKeywords(
         args, kwargs,
-        "|I",
+        "I",
         kwlist,
         &server_port)) {
         return (NULL);
     }
+    print_debug("Selected server port: %u\n", server_port);
 
     Py_BEGIN_ALLOW_THREADS
     run_core_server_loop(server_port,

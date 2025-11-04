@@ -8,8 +8,10 @@ import asyncio
 import threading
 from typing import Union, Optional
 
+PORT = 8080
+
 def _runner(app):
-    app.run()
+    app.run(PORT)
 
 
 class Response:
@@ -68,7 +70,7 @@ class TestClient(AAsyncMethodsHandler):
         for _ in range(500):
             try:
                 with socket.create_connection(("127.0.0.1",
-                                               self.app.port),
+                                               PORT),
                                               timeout=0.1):
                     break
             except OSError:
@@ -86,7 +88,7 @@ class TestClient(AAsyncMethodsHandler):
 
     async def link(self):
         reader, writer = await asyncio.open_connection("localhost",
-                                                       self.app.port)
+                                                       PORT)
         self.reader = reader
         self.writer = writer
 
