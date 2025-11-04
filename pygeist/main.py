@@ -35,7 +35,8 @@ def main():
         module = importlib.import_module(module_name)
         app = getattr(module, app_name)
         app.workers = async_workers
-        app.run(port)
+        app.port = port
+        app.run()
 
     multirunner(
         worker,
