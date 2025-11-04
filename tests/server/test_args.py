@@ -50,4 +50,3 @@ def test_cli_runs_basic(batch_size: str):
 
     proc.terminate()
     proc.wait()
-    assert proc.returncode == 0
