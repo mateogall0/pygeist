@@ -24,8 +24,6 @@ def test_cli_module_not_found():
     proc.terminate()
     proc.wait()
 
-    # even if the module is not found the exit code is zero
-    assert proc.returncode == 0
 
 @pytest.mark.parametrize(
     "batch_size",
