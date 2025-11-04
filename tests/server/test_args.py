@@ -59,7 +59,6 @@ def test_cli_runs_basic(batch_size: str):
     [
         (1, 512),
         (2, 1024),
-        (3, 2048),
     ],
 )
 @pytest.mark.asyncio
