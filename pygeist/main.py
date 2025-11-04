@@ -29,9 +29,9 @@ def main():
     workers = args.workers
     port = args.port
     async_workers = args.async_workers
+    module_name, app_name = app_value.split(":")
 
     def worker() -> None:
-        module_name, app_name = app_value.split(":")
         module = importlib.import_module(module_name)
         app = getattr(module, app_name)
         app.workers = async_workers

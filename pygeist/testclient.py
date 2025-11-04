@@ -125,3 +125,10 @@ class TestClient(AAsyncMethodsHandler):
             return
         self._cleanup_server(self.server_process)
         self._finalizer.detach()
+
+    async def __aenter__(self):
+        await self.link()
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.unlink()

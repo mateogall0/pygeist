@@ -5,7 +5,7 @@ from pygeist.registry import (Server,
 from pygeist.abstract.methods_handler import AMethodsHandler
 from pygeist.concurrency.helpers import worker, set_helper_loop
 import asyncio
-from .predefined_routes import info_retriever
+from .predefined_routes import info_retriever, ping
 
 
 class _APIRouter(AMethodsHandler):
@@ -45,6 +45,9 @@ class ZeitgeistAPI(_APIRouter):
         })
         self.get('/meta',
                  info_retriever.info_retriever_handler,
+                 status_code=200,)
+        self.get('/ping',
+                 ping.ping_handler,
                  status_code=200,)
 
         server = Server(self.port)
