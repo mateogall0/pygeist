@@ -5,8 +5,8 @@ import time
 import json
 import weakref
 import asyncio
-import threading
 from typing import Union, Optional
+
 
 def _runner(app):
     app.run()
@@ -62,7 +62,7 @@ class TestClient(AAsyncMethodsHandler):
 
         self.server_process = multiprocessing.Process(target=_runner,
                                                       args=(self.app,),
-                                                      daemon=False,)
+                                                      daemon=True,)
         self.server_process.start()
 
         for _ in range(500):
@@ -125,6 +125,3 @@ class TestClient(AAsyncMethodsHandler):
             return
         self._cleanup_server(self.server_process)
         self._finalizer.detach()
-
-    def __del__(self):
-        self.stop_server()

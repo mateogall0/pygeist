@@ -1,6 +1,7 @@
 #ifndef ZPYTHON_ZSERVER_SESSIONS_H
 #define ZPYTHON_ZSERVER_SESSIONS_H
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 PyObject*

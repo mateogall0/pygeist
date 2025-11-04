@@ -27,10 +27,10 @@ run_zeitgeist_server_adapter(PyObject *self,
     uint32_t server_port = 4000;
 
     if (!PyArg_ParseTupleAndKeywords(
-        args, kwargs,
-        "I",
-        kwlist,
-        &server_port)) {
+                                     args, kwargs,
+                                     "I",
+                                     kwlist,
+                                     &server_port)) {
         return (NULL);
     }
     print_debug("Selected server port: %u\n", server_port);
