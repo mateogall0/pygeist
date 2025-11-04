@@ -15,6 +15,9 @@ run_zeitgeist_server_adapter(PyObject *self,
                              PyObject *args,
                              PyObject *kwargs) {
     (void)self;
+    if (!Py_IsInitialized()) {
+        Py_Initialize();
+    }
     if (ssc) {
         PyErr_SetString(ServerAlreadyStarted, "server already initialized");
         return (NULL);
