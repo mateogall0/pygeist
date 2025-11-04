@@ -39,7 +39,7 @@ class ZeitgeistAPI(_APIRouter):
         self.workers = workers
         super().__init__(main_prefix)
 
-    def _compose(self) -> APIMaster:
+    def _compose(self, port: int) -> APIMaster:
         info_retriever.set_info({
             'idleness_max_time': self.idleness_max_time,
         })
@@ -47,7 +47,7 @@ class ZeitgeistAPI(_APIRouter):
                  info_retriever.info_retriever_handler,
                  status_code=200,)
 
-        server = Server(self.port)
+        server = Server(port)
         endpoints = Endpoints()
         self.init_endpoints()
         idleness_handler = IdlenessHandler(self.idleness_max_time)
@@ -69,9 +69,11 @@ class ZeitgeistAPI(_APIRouter):
             api_master.run(),
         )
 
-    def run(self) -> None:
-        api_master = self._compose()
-        print(f'Starting server on port {self.port}...')
+    def run(self,
+            port = 4000,
+            ) -> None:
+        api_master = self._compose(port)
+        print(f'Starting server on port {port}...')
         print('press Ctrl+C to stop it')
         asyncio.run(self._run(api_master))
         print('\nstopped')

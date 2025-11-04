@@ -1,10 +1,6 @@
 import argparse
 import importlib
-from pygeist import ZeitgeistAPI
-from multiprocessing import Process
-from time import sleep
-import sys
-import signal
+from pygeist.concurrency.multiprocess import multirunner
 
 
 def main():
@@ -16,8 +12,8 @@ def main():
         help="Module:app format (e.g. myapp:app)"
     )
     parser.add_argument(
-        "--port", "-p", type=int, default=8000,
-        help="Port number (default: 8000)"
+        "--port", "-p", type=int, default=4000,
+        help="Port number (default: 4000)"
     )
     parser.add_argument(
         "--workers", "-w", type=int, default=1,
@@ -30,33 +26,18 @@ def main():
 
     args = parser.parse_args()
     app_value = args.app
-
-    port = args.port
     workers = args.workers
+    port = args.port
     async_workers = args.async_workers
 
-    module_name, app_name = app_value.split(":")
-
-    def worker():
+    def worker() -> None:
+        module_name, app_name = app_value.split(":")
         module = importlib.import_module(module_name)
-        app: ZeitgeistAPI = getattr(module, app_name)
-        app.port = port
+        app = getattr(module, app_name)
         app.workers = async_workers
-        app.run()
+        app.run(port)
 
-    processes = []
-    for _ in range(workers):
-        p = Process(target=worker, daemon=True)
-        p.start()
-        processes.append(p)
-
-    def shutdown(sig, frame):
-        for p in processes:
-            p.terminate()
-        sys.exit(0)
-
-    signal.signal(signal.SIGINT, shutdown)
-    signal.signal(signal.SIGTERM, shutdown)
-
-    for p in processes:
-        p.join()
+    multirunner(
+        worker,
+        workers,
+    )
