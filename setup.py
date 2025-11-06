@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
-from pygeist import __version__
+
 
 setup(
     name="pygeist",
-    version=__version__,
+    version="0.3.1",
     packages=find_packages(include=["pygeist*"]),
     python_requires=">=3.10",
     install_requires=open("requirements.txt").read().splitlines(),
