@@ -103,8 +103,9 @@ class TestClient(AAsyncMethodsHandler):
         payload = f"{method.upper()} {target}{headers_str}\r\n\r\n{data}".encode()
         self.writer.write(payload)
         await self.writer.drain()
-        print('testclient now waiting for response...')
         response_data = await self.reader.read(self.buff_size)
+        if response_data == b'':
+            raise ConnectionError('disconnected')
         return Response(response_data, _process)
 
     async def unlink(self):

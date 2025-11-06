@@ -1,11 +1,13 @@
-from tests.fixtures.app_examples.sessioned import zeit_app, app
+from pygeist.zeitgeist import ZeitgeistAPI
+from tests.fixtures.app_examples.sessioned import zeit_app, app as fixture_app
 import pytest
+import asyncio
 from pygeist import TestClient
 
 
 @pytest.mark.asyncio
-async def test_set_get_user(app):
-    c = TestClient(app)
+async def test_set_get_user(fixture_app):
+    c = TestClient(fixture_app)
     await c.link()
 
     res = await c.get('/')
@@ -25,3 +27,20 @@ async def test_set_get_user(app):
     assert res.status_code == 400
 
     await c.unlink()
+
+@pytest.mark.asyncio
+async def test_session_timeout():
+    app = ZeitgeistAPI(idleness_max_time=1)
+
+    async def main():
+        return 'ok'
+
+    app.get('/', main, status_code=200)
+
+    c = TestClient(app)
+    await c.link()
+    res = await c.get('/')
+    assert res.status_code == 200
+    await asyncio.sleep(2)
+    with pytest.raises(ConnectionError):
+        res = await c.get('/')
