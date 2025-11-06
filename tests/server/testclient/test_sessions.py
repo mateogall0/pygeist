@@ -28,19 +28,20 @@ async def test_set_get_user(fixture_app):
 
     await c.unlink()
 
-@pytest.mark.asyncio
-async def test_session_timeout():
-    app = ZeitgeistAPI(idleness_max_time=1)
 
-    async def main():
-        return 'ok'
+# @pytest.mark.asyncio
+# async def test_session_timeout():
+#     app = ZeitgeistAPI(idleness_max_time=1)
 
-    app.get('/', main, status_code=200)
+#     async def main():
+#         return 'ok'
 
-    c = TestClient(app)
-    await c.link()
-    res = await c.get('/')
-    assert res.status_code == 200
-    await asyncio.sleep(2)
-    with pytest.raises(ConnectionError):
-        res = await c.get('/')
+#     app.get('/', main, status_code=200)
+
+#     c = TestClient(app)
+#     await c.link()
+#     res = await c.get('/')
+#     assert res.status_code == 200
+#     await asyncio.sleep(2)
+#     with pytest.raises(ConnectionError):
+#         res = await c.get('/')

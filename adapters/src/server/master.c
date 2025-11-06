@@ -59,6 +59,10 @@ static PyMethodDef AdapterMethods[] = {
      run_create_append_endpoint,
      METH_VARARGS | METH_KEYWORDS,
      "Create an endpoint and append it to the endpoints list"},
+    {"_log_request",
+     run_log_request,
+     METH_VARARGS | METH_KEYWORDS,
+     "Log request data with the same format as core"},
     {NULL, NULL, 0, NULL}
 };
 

@@ -14,4 +14,7 @@ run_get_api_log_requests(PyObject *self);
 PyObject*
 run_set_api_log_requests(PyObject *self, PyObject *args, PyObject *kwargs);
 
+PyObject *
+run_log_request(PyObject *self, PyObject *args, PyObject *kwargs);
+
 #endif

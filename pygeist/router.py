@@ -117,7 +117,7 @@ class Router(RouterRigistry):
                 str_result = zex.get_body_result()
 
             await send_payload(req.client_key, fres)
-            print(f'{final_status} {req.method} {req.target}')
+            _adapter._log_request(req.method, req.target, final_status)
 
         wrapped_handler.ret = response_model
         wrapped_handler.params = params

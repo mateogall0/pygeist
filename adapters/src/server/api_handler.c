@@ -74,3 +74,27 @@ run_set_api_log_requests(PyObject *self, PyObject *args, PyObject *kwargs) {
 
     Py_RETURN_NONE;
 }
+
+PyObject *
+run_log_request(PyObject *self, PyObject *args, PyObject *kwargs) {
+    (void)self;
+
+    static char *kwlist[] = {"method", "target", "status_code", NULL};
+    char *method = "";
+    char *target = "";
+    int status_code = 500;
+
+    if (!PyArg_ParseTupleAndKeywords(
+                                     args, kwargs,
+                                     "ssi",
+                                     kwlist,
+                                     &method,
+                                     &target,
+                                     &status_code)) {
+        return (NULL);
+    }
+    if (get_log_requests()) {
+        PRINT_METHOD_TARGET(method, target);
+    }
+    Py_RETURN_NONE;
+}
