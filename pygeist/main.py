@@ -38,7 +38,10 @@ def main():
         app.port = port
         app.run()
 
+    print(f'Starting server on port {port}...')
+    print('press Ctrl+C to stop it')
     multirunner(
         worker,
         workers,
     )
+    print('\nstopped')

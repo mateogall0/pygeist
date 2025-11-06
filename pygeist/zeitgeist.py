@@ -43,6 +43,7 @@ class ZeitgeistAPI(_APIRouter):
         info_retriever.set_info({
             'idleness_max_time': self.idleness_max_time,
         })
+
         self.get('/meta',
                  info_retriever.info_retriever_handler,
                  status_code=200,)
@@ -72,9 +73,6 @@ class ZeitgeistAPI(_APIRouter):
             api_master.run(),
         )
 
-    def run(self,) -> None:
+    def run(self) -> None:
         api_master = self._compose()
-        print(f'Starting server on port {self.port}...')
-        print('press Ctrl+C to stop it')
         asyncio.run(self._run(api_master))
-        print('\nstopped')

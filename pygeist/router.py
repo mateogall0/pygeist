@@ -85,11 +85,13 @@ class Router(RouterRigistry):
             _ret = wrapped_handler.ret
             _params = wrapped_handler.params
 
+            final_status: int = 500
             try:
                 try:
                     kw = await sig_util.params_filter(_params, req)
                 except (ValueError, TypeError, KeyError, IndexError):
-                    raise ZEITException(422, '422 Unprocessable entity')
+                    final_status = 422
+                    raise ZEITException(final_status, '422 Unprocessable entity')
 
                 result = await handler(**kw)
 
@@ -102,16 +104,20 @@ class Router(RouterRigistry):
                     f"Content-Length: {len(str_result)}\r\n\r\n"
                     f"{str_result}"
                 )
+                final_status = status_code
             except ZEITException as zex:
                 fres = zex.get_fres(_adapter.SERVER_VERSION, req)
                 str_result = zex.get_body_result()
+                final_status = zex._status_code
             except Exception:
                 traceback.print_exc()
-                zex = ZEITException(500, '500 Internal server error')
+                final_status = 500
+                zex = ZEITException(final_status, '500 Internal server error')
                 fres = zex.get_fres(_adapter.SERVER_VERSION, req)
                 str_result = zex.get_body_result()
 
             await send_payload(req.client_key, fres)
+            print(f'{final_status} {req.method} {req.target}')
 
         wrapped_handler.ret = response_model
         wrapped_handler.params = params

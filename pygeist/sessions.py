@@ -1,6 +1,6 @@
 from typing import Any
 from pygeist import _adapter
-import asyncio
+
 
 async def set_session_data(key: int, value: Any):
     return _adapter._set_session_meta(key, value)

@@ -41,7 +41,7 @@ char *_handler(request_t *r) {
     PyGILState_STATE gstate = PyGILState_Ensure();
     print_debug("Reached internal _handler\n");
 
-    PyObject *req_inst_args = Py_BuildValue("(isssisk)",
+    PyObject *req_inst_args = Py_BuildValue("(ssssisk)",
                                             r->method,
                                             r->target,
                                             r->body,
