@@ -94,7 +94,7 @@ run_log_request(PyObject *self, PyObject *args, PyObject *kwargs) {
         return (NULL);
     }
     if (get_log_requests()) {
-        PRINT_METHOD_TARGET(method, target);
+        PRINT_METHOD_TARGET(method, target, status_code);
     }
     Py_RETURN_NONE;
 }
