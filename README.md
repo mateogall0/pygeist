@@ -2,8 +2,9 @@
 Pygeist is a Python module that abstracts the application layer protocol `Zeitgeist` implementation.
 
 [![Tests](https://github.com/mateogall0/pygeist/actions/workflows/tests.yml/badge.svg)](https://github.com/mateogall0/pygeist/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Protocol
+#### Protocol
 See [here](https://github.com/mateogall0/zeitgeist_core) to look into the core implementation of the protocol.
 
 ```bash
@@ -20,25 +21,9 @@ This package is available for `pip`:
 pip install pygeist
 ```
 
-## Build
-You can also build it and utilize it from source.
-### Dev requirements
-Install the required dev dependencies utilizing the following commands:
-```bash
-xargs sudo apt-get -y install < packages.txt
-pip install -r requirements-dev.txt
-```
+## Quick example
 
-### Compilation
-To build the required Core implementation and Python C API adapters:
-```bash
-make
-```
-This generates `pygeist/_adapter.so`.
-
-## Example
-
-### Create
+#### Create
 ```python
 # example.py
 from pygeist import ZeitgeistAPI, Request
@@ -51,7 +36,7 @@ async def main_handler(req: Request):
 app.get('/', main_handler, status_code=200)
 ```
 
-### Run
+#### Run
 ```bash
 python3 -m pygeist example:app
 ```
@@ -65,10 +50,25 @@ from pygeist import TestClient
 from example import app
 import pytest
 
-
 @pytest.mark.asyncio
 async def test_get():
     async with TestCient(app) as client:
         res = await client.get('/')
         assert res.status_code == 200
+```
+
+## Contributing
+
+Contributions, issues, and feature requests are welcome!
+Feel free to check the [issues page](https://github.com/mateogall0/pygeist/issues) or open a [pull request](https://github.com/mateogall0/pygeist/pulls).
+
+To set up the project locally:
+
+```bash
+git clone https://github.com/mateogall0/pygeist
+cd pygeist
+xargs sudo apt-get -y install < packages.txt
+make
+pip install -r requirements-dev.txt
+pytest
 ```
