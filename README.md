@@ -21,7 +21,7 @@ This package is available for `pip`:
 pip install pygeist
 ```
 
-## Quick example
+## Quick endpoint example
 
 #### Create
 ```python
@@ -39,6 +39,28 @@ app.get('/', main_handler, status_code=200)
 #### Run
 ```bash
 python3 -m pygeist example:app
+```
+
+## Model support
+This module utilizes [Pydantic](https://pypi.org/project/pydantic/) for both input and output handling of inputs:
+```python
+# user.py
+from pygeist import Router
+from pydantic import BaseModel
+
+class UserModel(BaseModel):
+    name: str
+    age: int
+
+async def user_main():
+    return {'name': 'test', 'age': 21}
+
+async def is_adult(user: UserModel):
+    return u.age >= 18
+
+router = Router('/user')
+router.get('/', user_main, status_code=200, response_model=UserModel)
+router.get('/isadult', is_adult, status_code=200)
 ```
 
 ## Testing

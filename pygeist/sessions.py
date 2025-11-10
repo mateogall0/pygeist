@@ -1,5 +1,5 @@
 from typing import Any
-from pygeist import _adapter
+from pygeist.adapter import _adapter
 
 
 async def set_session_data(key: int, value: Any):

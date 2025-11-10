@@ -1,5 +1,5 @@
 from pygeist.abstract.idleness_handler import AIdlenessHandler
-from pygeist import _adapter
+from pygeist.adapter import _adapter
 
 
 class IdlenessHandler(AIdlenessHandler):

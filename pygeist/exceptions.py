@@ -52,3 +52,6 @@ class ZEITException(ZeitgeistServerException):
             f"Content-Length: {len(sres)}\r\n\r\n"
             f"{sres}"
         )
+
+class AdapterNotCompiled(ZeitgeistServerException):
+    pass
