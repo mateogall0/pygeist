@@ -6,7 +6,7 @@ from .exceptions import ZEITException
 from .testclient import TestClient
 from .request import Request
 from .sessions import get_session_data, set_session_data
-
+from .unrequested_message import Message, send_message
 
 __all__ = [
     'ZeitgeistAPI',

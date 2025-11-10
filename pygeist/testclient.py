@@ -42,6 +42,32 @@ class Response:
 
     __repr__ = __str__
 
+class ServerMessage:
+    def __init__(self,
+                 raw_payload: bytes,
+                 ) -> None:
+        self.payload = raw_payload.decode()
+        all_headers, _, content = self.payload.partition("\r\n\r\n")
+        self.all_head = all_headers
+        self.content = content
+        self.body = content
+
+    @property
+    def body(self) -> Optional[Union[dict, str]]:
+        return self._body
+
+    @body.setter
+    def body(self, body: Optional[Union[dict, str]]) -> None:
+        try:
+            self._body = json.loads(body)
+        except (json.JSONDecodeError, TypeError):
+            self._body = body
+
+    def __str__(self) -> str:
+        return f'Response:\npayload: {self.payload}\n'
+
+    __repr__ = __str__
+
 
 class TestClient(AAsyncMethodsHandler):
     __test__ = False  # tells pytest to not collect this
@@ -107,6 +133,10 @@ class TestClient(AAsyncMethodsHandler):
         if response_data == b'':
             raise ConnectionError('disconnected')
         return Response(response_data, _process)
+
+    async def receive(self):
+        response_data = await self.reader.read(self.buff_size)
+        return ServerMessage(response_data)
 
     async def unlink(self):
         if self.writer:

@@ -20,9 +20,18 @@ void _add_server_version(PyObject *m) {
         Py_DECREF(m);
 }
 
+void _add_unreq_signature(PyObject *m) {
+    if (PyModule_AddStringConstant(m,
+                                   "MESSAGE_SIGNATURE",
+                                   ZEIT_MESSAGE_SIGNATURE) < 0)
+        Py_DECREF(m);
+}
+
+
 void init_consts(PyObject *m) {
     if (!m)
         return;
     _add_methods_const(m);
     _add_server_version(m);
+    _add_unreq_signature(m);
 }
