@@ -1,6 +1,6 @@
 from pygeist.utils.singleton import singleton_class
 from pygeist.abstract.api import AServer
-from pygeist import _adapter
+from pygeist.adapter import _adapter
 from pygeist.exceptions import ServerAlreadyStarted
 import asyncio
 

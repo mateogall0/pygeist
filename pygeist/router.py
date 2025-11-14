@@ -1,4 +1,4 @@
-from pygeist import _adapter
+from pygeist.adapter import _adapter
 from typing import Callable
 from pygeist.abstract.endpoint import AEndpoints
 from pygeist.exceptions import EndpointsDestruct, ZEITException

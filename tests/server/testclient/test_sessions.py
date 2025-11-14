@@ -28,20 +28,30 @@ async def test_set_get_user(fixture_app):
 
     await c.unlink()
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("num_clients,messages", [
+    (2, ["hello", "world"]),
+    (3, ["foo", "bar", "baz"]),
+    (5, ["ping"]),
+])
+async def test_broadcast(fixture_app, num_clients, messages):
+    broadcaster = TestClient(fixture_app)
+    await broadcaster.link()
 
-# @pytest.mark.asyncio
-# async def test_session_timeout():
-#     app = ZeitgeistAPI(idleness_max_time=1)
+    listeners = [TestClient(fixture_app, create_server=False) for _ in range(num_clients)]
+    for c in listeners:
+        await c.link()
+        res = await c.post('/msgs/')
+        assert res.status_code == 200
 
-#     async def main():
-#         return 'ok'
+    for msg_text in messages:
+        res = await broadcaster.post(f'/msgs/broadcast?msg={msg_text}')
+        assert res.status_code == 200
 
-#     app.get('/', main, status_code=200)
+        for c in listeners:
+            msg = await c.receive()
+            assert msg.body == msg_text
 
-#     c = TestClient(app)
-#     await c.link()
-#     res = await c.get('/')
-#     assert res.status_code == 200
-#     await asyncio.sleep(2)
-#     with pytest.raises(ConnectionError):
-#         res = await c.get('/')
+    for c in listeners:
+        await c.unlink()
+    await broadcaster.unlink()
