@@ -49,10 +49,7 @@ PyObject*
 run_get_api_log_requests(PyObject *self) {
     (void)self;
 
-    bool b = get_log_requests();
-
-    Py_INCREF(b ? Py_True : Py_False);
-    return (b ? Py_True : Py_False);
+    return PyBool_FromLong(get_log_requests());
 }
 
 PyObject*
@@ -84,8 +81,7 @@ run_log_request(PyObject *self, PyObject *args, PyObject *kwargs) {
     char *target = "";
     int status_code = 500;
 
-    if (!PyArg_ParseTupleAndKeywords(
-                                     args, kwargs,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
                                      "ssi",
                                      kwlist,
                                      &method,

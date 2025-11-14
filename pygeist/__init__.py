@@ -16,4 +16,6 @@ __all__ = [
     'Request',
     'get_session_data',
     'set_session_data',
+    'Message',
+    'send_message',
 ]
