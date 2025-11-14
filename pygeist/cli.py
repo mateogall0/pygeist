@@ -2,10 +2,16 @@ import argparse
 import importlib
 from pygeist.concurrency.multiprocess import multirunner
 
+class AlignedFormatter(argparse.HelpFormatter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, max_help_position=48, **kwargs)
 
 def main():
-    parser = argparse.ArgumentParser('pygeist',
-                                     description="Pygeist server runner")
+    parser = argparse.ArgumentParser(
+        'pygeist',
+        description="Pygeist server runner",
+        formatter_class=AlignedFormatter,
+    )
 
     parser.add_argument(
         "app",
