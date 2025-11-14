@@ -10,7 +10,7 @@ extern PyObject *EndpointsInit;
 extern PyObject *EndpointsDestruct;
 extern PyObject *SessionCreation;
 
-void init_exceptions(void);
+int init_exceptions(void);
 
 
 #endif

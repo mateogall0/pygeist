@@ -6,14 +6,15 @@
 PyObject *RequestClass = NULL;
 
 
-void import_classes() {
+int import_classes() {
     PyObject *request_py = PyImport_ImportModule(ZSERVER_MODULE_NAME ".request");
-    if (!request_py) return;
+    if (!request_py) return 1;
 
     RequestClass = PyObject_GetAttrString(request_py, "Request");
 
     Py_DECREF(request_py);
-    if (!RequestClass) return;
+    if (!RequestClass) return 1;
 
     Py_INCREF(RequestClass);
+    return 0;
 }

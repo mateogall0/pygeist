@@ -5,6 +5,7 @@
 #include "adapters/include/server/endpoint.h"
 #include "adapters/include/server/classes.h"
 #include "adapters/include/server/const.h"
+#include "adapters/include/server/helpers.h"
 
 
 PyObject *global_executor = NULL;
@@ -83,25 +84,29 @@ static struct PyModuleDef adaptermodule = {
 PyMODINIT_FUNC PyInit__adapter(void) {
     PyObject *m = PyModule_Create(&adaptermodule);
     if (!m)
-        return (NULL);
-    init_exceptions();
-    import_classes();
+        return NULL;
+    if (init_exceptions() == 1)
+        return NULL;
+    if (import_classes() == 1)
+        return NULL;
+    if (init_helpers() == 1)
+        return NULL;
     init_consts(m);
     int max_workers = 2;
     PyObject *concurrent = PyImport_ImportModule("concurrent.futures");
     if (!concurrent)
-        return (NULL);
+        return NULL;
 
     PyObject *executor_class = PyObject_GetAttrString(concurrent, "ThreadPoolExecutor");
     if (!executor_class)
-        return (NULL);
+        return NULL;
 
     global_executor = PyObject_CallFunction(executor_class, "(i)", max_workers);
     if (!global_executor) {
         PyErr_Print();
         Py_DECREF(executor_class);
         Py_DECREF(concurrent);
-        return (NULL);
+        return NULL;
     }
 
 
@@ -110,5 +115,5 @@ PyMODINIT_FUNC PyInit__adapter(void) {
     Py_DECREF(executor_class);
     Py_DECREF(concurrent);
 
-    return (m);
+    return m;
 }

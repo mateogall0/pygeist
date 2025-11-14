@@ -7,6 +7,6 @@
 
 extern PyObject *RequestClass;
 
-void import_classes();
+int import_classes();
 
 #endif

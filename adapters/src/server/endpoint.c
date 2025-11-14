@@ -4,6 +4,7 @@
 #include "adapters/include/server/config.h"
 #include "core/include/server/api/endpoint.h"
 #include "core/include/debug.h"
+#include "adapters/include/server/helpers.h"
 
 
 PyObject*
@@ -70,26 +71,14 @@ char *_handler(request_t *r) {
     PyObject *handler = (PyObject *)r->endpoint->meta;
     PyObject *result = NULL;
 
-    PyObject *helpers = PyImport_ImportModule(ZSERVER_MODULE_NAME ".concurrency.helpers");
-    if (!helpers) {
-        goto fail_args;
-    }
-
-    PyObject *run_handler_func = PyObject_GetAttrString(helpers, "run_handler");
-    Py_DECREF(helpers);
-    if (!run_handler_func) {
-        goto fail_args;
-    }
     PyObject *run_args = Py_BuildValue("(OO)", handler, req_inst);
     if (!run_args) {
-        Py_DECREF(run_handler_func);
         goto fail_args;
     }
 
     print_debug("About to call async helper from C\n");
     result = PyObject_CallObject(run_handler_func, run_args);
     if (result) Py_DECREF(result);
-    Py_DECREF(run_handler_func);
     Py_DECREF(run_args);
     print_debug("Finished call async helper from C\n");
 
