@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pygeist"
+dynamic = ["version"]
+description = "Pygeist server package"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["pydantic"]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-asyncio",
+  "pytest-timeout"
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["pygeist*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "pygeist.__version__" }
