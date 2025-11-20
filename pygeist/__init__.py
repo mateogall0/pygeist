@@ -7,6 +7,7 @@ from .testclient import TestClient
 from .request import Request
 from .sessions import get_session_data, set_session_data
 from .unrequested_message import Message, send_message
+from .dependency import Depends
 
 __all__ = [
     'ZeitgeistAPI',
@@ -18,4 +19,5 @@ __all__ = [
     'set_session_data',
     'Message',
     'send_message',
+    'Depends',
 ]

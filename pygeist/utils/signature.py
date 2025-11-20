@@ -2,10 +2,12 @@ import inspect
 from typing import Callable, Any, Dict, List, get_origin, get_args
 from pygeist.request import Request
 from pydantic import BaseModel, TypeAdapter
+from pygeist.abstract.dependency import Dependency
 
 
 def process_signature(handler: Callable,
-                      ) -> tuple[dict[str, type], type | None]:
+                      ) -> tuple[dict[str, tuple[type, Any]],
+                                 type | None]:
     sig = inspect.signature(handler)
     params = {}
 
@@ -13,7 +15,11 @@ def process_signature(handler: Callable,
         annotation = param.annotation
         if annotation is inspect._empty:
             annotation = None
-        params[name] = annotation
+        default_val = param.default
+        if default_val is inspect._empty:
+            default_val = None
+        params[name] = (annotation,
+                        default_val)
 
     return_annotation = sig.return_annotation
     if return_annotation is inspect._empty:
@@ -21,13 +27,16 @@ def process_signature(handler: Callable,
 
     return params, return_annotation
 
-async def params_filter(params: dict[str, type],
+async def params_filter(params: dict[str, tuple[type, Any]],
                         req: Request,
                         ) -> dict[str, Any]:
     kw = {}
 
-    for k, v in params.items():
-        if v == Request:
+    for k, whole_sig in params.items():
+        v, default_val = whole_sig
+        if isinstance(default_val, Dependency):
+            kw[k] = await default_val.call_depend([req])
+        elif v == Request:
             kw[k] = req
 
         elif isinstance(v, type) and issubclass(v, BaseModel):
