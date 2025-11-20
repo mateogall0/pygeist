@@ -1,5 +1,5 @@
 # Pygeist
-Pygeist is a Python module that abstracts the application layer protocol `Zeitgeist` implementation.
+Pygeist is a Python package that abstracts the application layer protocol `Zeitgeist` implementation.
 
 [![Tests](https://github.com/mateogall0/pygeist/actions/workflows/tests.yml/badge.svg)](https://github.com/mateogall0/pygeist/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -42,7 +42,7 @@ python3 -m pygeist example:app
 ```
 
 ## Model support
-This module utilizes [Pydantic](https://pypi.org/project/pydantic/) for both input and output handling of inputs:
+This package utilizes [Pydantic](https://pypi.org/project/pydantic/) for both input and output handling of inputs:
 ```python
 # user.py
 from pygeist import Router
@@ -64,7 +64,7 @@ router.get('/isadult', is_adult, status_code=200)
 ```
 
 ## Testing
-This module implements a `TestClient` allowing for a mock integration of a client interacting with the server.
+This package implements a `TestClient` allowing for a mock integration of a client interacting with the server.
 It is recommended to use the [Pytest](https://pypi.org/project/pytest/) framework:
 ```python
 # tests.py
