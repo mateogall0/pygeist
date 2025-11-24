@@ -88,9 +88,10 @@ To set up the project locally:
 
 ```bash
 git clone https://github.com/mateogall0/pygeist
-cd pygeist
+cd pygeist_client
 xargs sudo apt-get -y install < packages.txt
+pip install --upgrade pip build twine
+pip install .[dev]
 make
-pip install -r requirements-dev.txt
 pytest
 ```
