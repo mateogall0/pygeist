@@ -1,8 +1,11 @@
 import inspect
 from typing import Callable, Any, Dict, List, get_origin, get_args
-from pygeist.request import Request
+from pygeist.abstract.request import ARequest
 from pydantic import BaseModel, TypeAdapter
 from pygeist.abstract.dependency import Dependency
+
+def safe_issubclass(obj, parent):
+    return isinstance(obj, type) and issubclass(obj, parent)
 
 
 def process_signature(handler: Callable,
@@ -28,7 +31,7 @@ def process_signature(handler: Callable,
     return params, return_annotation
 
 async def params_filter(params: dict[str, tuple[type, Any]],
-                        req: Request,
+                        req: ARequest,
                         ) -> dict[str, Any]:
     kw = {}
 
@@ -36,10 +39,10 @@ async def params_filter(params: dict[str, tuple[type, Any]],
         v, default_val = whole_sig
         if isinstance(default_val, Dependency):
             kw[k] = await default_val.call_depend([req])
-        elif v == Request:
+        elif safe_issubclass(v, ARequest):
             kw[k] = req
 
-        elif isinstance(v, type) and issubclass(v, BaseModel):
+        elif safe_issubclass(v, BaseModel):
             kw[k] = v(**req.body)
 
         elif v in (dict, Dict):

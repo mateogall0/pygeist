@@ -89,7 +89,8 @@ class Router(RouterRigistry):
             try:
                 try:
                     kw = await sig_util.params_filter(_params, req)
-                except (ValueError, TypeError, KeyError, IndexError):
+                except (ValueError, TypeError, KeyError, IndexError) as e:
+                    print(e)
                     final_status = 422
                     raise ZEITException(final_status, '422 Unprocessable entity')
 
