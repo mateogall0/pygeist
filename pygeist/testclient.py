@@ -1,10 +1,11 @@
 from pygeist.abstract.methods_handler import AAsyncMethodsHandler
-import multiprocessing
 import socket
 import time
 import json
 import weakref
 import asyncio
+import sys
+import multiprocessing
 from typing import Union, Optional
 
 
@@ -87,8 +88,8 @@ class TestClient(AAsyncMethodsHandler):
             return
 
         self.server_process = multiprocessing.Process(target=_runner,
-                                                      args=(self.app,),
-                                                      daemon=True,)
+                                                          args=(self.app,),
+                                                          daemon=False)
         self.server_process.start()
 
         for _ in range(500):
@@ -102,7 +103,9 @@ class TestClient(AAsyncMethodsHandler):
         else:
             raise RuntimeError("server did not start in time")
 
-        self._finalizer = weakref.finalize(self, self._cleanup_server, self.server_process)
+        self._finalizer = weakref.finalize(self,
+                                           self._cleanup_server,
+                                           self.server_process)
 
     async def _method_handler(self,
                               *ag,
@@ -144,6 +147,7 @@ class TestClient(AAsyncMethodsHandler):
             await self.writer.wait_closed()
             self.writer = None
             self.reader = None
+
 
     @staticmethod
     def _cleanup_server(proc):

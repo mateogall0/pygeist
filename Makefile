@@ -10,6 +10,13 @@ endif
 
 LDFLAGS := -shared $(shell python3-config --ldflags)
 
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+  CC = clang
+  LDFLAGS += -shared -arch arm64 -undefined dynamic_lookup -mmacosx-version-min=11.0
+endif
+
 # Source directories
 CORE_SERVER_SRC := core/src/server
 CORE_COMMON_SRC := core/src/common

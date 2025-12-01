@@ -7,7 +7,6 @@
 #include "adapters/include/server/config.h"
 #include "adapters/include/server/api_handler.h"
 #include "adapters/include/server/exceptions.h"
-#include <sys/prctl.h>
 #include <stdbool.h>
 
 PyObject*
