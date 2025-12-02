@@ -1,7 +1,10 @@
-from multiprocessing import Process
+from multiprocessing import Process, set_start_method
 import sys
 import signal
 from typing import Callable
+
+
+set_start_method("spawn", force=True)
 
 
 def multirunner(task: Callable,

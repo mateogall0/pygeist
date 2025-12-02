@@ -87,6 +87,8 @@ class TestClient(AAsyncMethodsHandler):
         if not self.create_server:
             return
 
+        multiprocessing.set_start_method("spawn", force=True)
+
         self.server_process = multiprocessing.Process(target=_runner,
                                                           args=(self.app,),
                                                           daemon=False)
