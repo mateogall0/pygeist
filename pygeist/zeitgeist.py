@@ -64,8 +64,8 @@ class ZeitgeistAPI(_APIRouter):
     async def _run(self,
                    api_master: APIMaster,
                    ) -> None:
-
-        set_helper_loop(asyncio.get_event_loop())
+        loop = asyncio.get_event_loop()
+        set_helper_loop(loop)
         worker_tasks = [worker() for _ in range(self.workers)]
 
         await asyncio.gather(

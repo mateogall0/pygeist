@@ -2,9 +2,7 @@ from multiprocessing import Process, set_start_method
 import sys
 import signal
 from typing import Callable
-
-
-set_start_method("spawn", force=True)
+import platform
 
 
 def multirunner(task: Callable,
@@ -26,3 +24,15 @@ def multirunner(task: Callable,
 
     for p in processes:
         p.join()
+
+def fork_proc(runner, *ag):
+    proc = Process(target=runner,
+                   args=ag,
+                   daemon=False)
+    proc.start()
+    return proc
+
+def kill_proc(proc):
+    if proc.is_alive():
+        proc.terminate()
+        proc.join()

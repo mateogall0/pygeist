@@ -50,3 +50,38 @@ def test_cli_runs_basic(batch_size: str):
 
     proc.terminate()
     proc.wait()
+
+
+@pytest.mark.asyncio
+async def test_cli_runs_request():
+    port = _find_free_port()
+    cmd = ["python", "-m", "pygeist",
+           "examples.basic.intro:app",
+           "-p", str(port),]
+    proc = subprocess.Popen(cmd)
+
+    for _ in range(1000):
+        try:
+            with socket.create_connection(("127.0.0.1",
+                                           port),
+                                          timeout=0.1):
+                break
+        except OSError:
+            time.sleep(0.001)
+    else:
+        raise RuntimeError("server did not start in time")
+
+
+    with socket.create_connection(("127.0.0.1",
+                                   port),
+                                  timeout=0.1) as c:
+        msg = f'GET / 5\r\nContent-length: 2\r\n\r\nOK'
+        c.sendall(msg.encode())
+
+        data = c.recv(8192)
+        assert len(data) != 0
+
+
+
+    proc.terminate()
+    proc.wait()

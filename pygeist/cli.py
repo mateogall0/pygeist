@@ -6,6 +6,18 @@ class AlignedFormatter(argparse.HelpFormatter):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, max_help_position=48, **kwargs)
 
+def worker(
+    module_name: str,
+    app_name: str,
+    async_workers: int,
+    port: int,
+) -> None:
+    module = importlib.import_module(module_name)
+    app = getattr(module, app_name)
+    app.workers = async_workers
+    app.port = port
+    app.run()
+
 def main():
     parser = argparse.ArgumentParser(
         'pygeist',
@@ -37,17 +49,14 @@ def main():
     async_workers = args.async_workers
     module_name, app_name = app_value.split(":")
 
-    def worker() -> None:
-        module = importlib.import_module(module_name)
-        app = getattr(module, app_name)
-        app.workers = async_workers
-        app.port = port
-        app.run()
-
     print(f'Starting server on port {port}...')
     print('press Ctrl+C to stop it')
     multirunner(
         worker,
         workers,
+        (module_name,
+         app_name,
+         async_workers,
+         port,)
     )
     print('\nstopped')

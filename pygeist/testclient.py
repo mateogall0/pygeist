@@ -5,9 +5,8 @@ import json
 import weakref
 import asyncio
 import sys
-import multiprocessing
 from typing import Union, Optional
-
+from pygeist.concurrency.multiprocess import kill_proc, fork_proc
 
 def _runner(app):
     app.run()
@@ -87,12 +86,7 @@ class TestClient(AAsyncMethodsHandler):
         if not self.create_server:
             return
 
-        multiprocessing.set_start_method("spawn", force=True)
-
-        self.server_process = multiprocessing.Process(target=_runner,
-                                                          args=(self.app,),
-                                                          daemon=False)
-        self.server_process.start()
+        self.server_process = fork_proc(_runner, self.app)
 
         for _ in range(500):
             try:
@@ -153,9 +147,7 @@ class TestClient(AAsyncMethodsHandler):
 
     @staticmethod
     def _cleanup_server(proc):
-        if proc.is_alive():
-            proc.terminate()
-            proc.join()
+        kill_proc(proc)
 
     def stop_server(self):
         if not self.create_server:
