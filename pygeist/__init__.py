@@ -1,7 +1,5 @@
 __version__ = "0.5.0"
 
-from multiprocessing import set_start_method
-set_start_method("spawn", force=True)
 
 from .zeitgeist import ZeitgeistAPI
 from .router import Router

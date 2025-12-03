@@ -3,7 +3,7 @@ from pygeist.registry import (Server,
                               IdlenessHandler,
                               APIMaster,)
 from pygeist.abstract.methods_handler import AMethodsHandler
-from pygeist.concurrency.helpers import worker, set_helper_loop
+from pygeist.concurrency.helpers import workers_queue
 import asyncio
 from .predefined_routes import info_retriever, ping
 
@@ -65,8 +65,9 @@ class ZeitgeistAPI(_APIRouter):
                    api_master: APIMaster,
                    ) -> None:
         loop = asyncio.get_event_loop()
-        set_helper_loop(loop)
-        worker_tasks = [worker() for _ in range(self.workers)]
+        workers_queue.init(loop)
+        worker_tasks = [workers_queue.worker()
+                        for _ in range(self.workers)]
 
         await asyncio.gather(
             *worker_tasks,

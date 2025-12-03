@@ -8,30 +8,31 @@ from pygeist.router import Router
 from pygeist.request import Request
 from pygeist.sessions import send_payload
 
+async def handler1515(req: Request):
+    print('hi from 1515 handler')
+    return 1515
+
+async def handlerpow(req: Request):
+    try:
+        return int(req.body) ** 2
+    except:
+        return 'error'
+
+async def handlerbye(req: Request):
+    return 'bye'
+
+
+async def handlerhello(req: Request):
+    return 'hello'
 
 def _build_example(port):
     r = Router('/')
-    async def handler1515(req: Request):
-        print('hi from 1515 handler')
-        return 1515
-
-    async def handlerpow(req: Request):
-        try:
-            return int(req.body) ** 2
-        except:
-            return 'error'
 
     nested_r = Router('/hello')
-
-    async def handlerhello(req: Request):
-        return 'hello'
 
     nested_r.get('/get-hello', handlerhello, status_code=200)
 
     nested_r2 = Router('/bye')
-
-    async def handlerbye(req: Request):
-        return 'bye'
 
     nested_r2.get('/get-bye', handlerbye, status_code=200)
 

@@ -5,12 +5,15 @@ from typing import Callable
 import platform
 
 
+set_start_method("fork", force=True)
+
+
 def multirunner(task: Callable,
                 batch_size: int,
                 args=()) -> None:
     processes = []
     for _ in range(batch_size):
-        p = Process(target=task, daemon=False, args=args)
+        p = Process(target=task, daemon=True, args=args)
         p.start()
         processes.append(p)
 
@@ -28,7 +31,7 @@ def multirunner(task: Callable,
 def fork_proc(runner, *ag):
     proc = Process(target=runner,
                    args=ag,
-                   daemon=False)
+                   daemon=True)
     proc.start()
     return proc
 

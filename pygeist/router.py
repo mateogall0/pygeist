@@ -1,5 +1,5 @@
 from pygeist.adapter import _adapter
-from typing import Callable
+from typing import Callable, Any
 from pygeist.abstract.endpoint import AEndpoints
 from pygeist.exceptions import EndpointsDestruct, ZEITException
 from pygeist.request import Request
@@ -8,6 +8,53 @@ from pygeist.abstract.methods_handler import AMethodsHandler
 import json
 import traceback
 from pygeist.utils import signature as sig_util
+
+
+class WrappedEndpoint:
+    def __init__(self,
+                 handler: Callable,
+                 params_info: Any,
+                 response_model: Any | None,
+                 status_code: int):
+        self.handler =  handler
+        self.params_info = params_info
+        self.response_model = response_model
+        self.status_code = status_code
+
+    async def __call__(self, req: Request):
+        handler = self.handler
+
+        params = self.params_info
+        try:
+            kw = await sig_util.params_filter(params, req)
+        except (ValueError, TypeError, KeyError, IndexError):
+            zex = ZEITException(422, '422 Unprocessable entity')
+            fres = zex.get_fres(_adapter.SERVER_VERSION, req)
+            await send_payload(req.client_key, fres)
+            _adapter._log_request(req.method, req.target, 422)
+            return
+
+        try:
+            result = await self.handler(**kw)
+            body = result if isinstance(result, str) else json.dumps(result)
+            fres = (
+                f"{_adapter.SERVER_VERSION} {self.status_code} {req.rid}\r\n"
+                f"Content-Length: {len(body)}\r\n\r\n"
+                f"{body}"
+            )
+            await send_payload(req.client_key, fres)
+            _adapter._log_request(req.method, req.target, self.status_code)
+        except ZEITException as zex:
+            fres = zex.get_fres(_adapter.SERVER_VERSION, req)
+            await send_payload(req.client_key, fres)
+            _adapter._log_request(req.method, req.target, zex._status_code)
+        except Exception:
+            traceback.print_exc()
+            zex = ZEITException(500, '500 Internal server error')
+            fres = zex.get_fres(_adapter.SERVER_VERSION, req)
+            await send_payload(req.client_key, fres)
+            _adapter._log_request(req.method, req.target, 500)
+
 
 class Endpoints(AEndpoints):
     def __del__(self) -> None:
@@ -81,47 +128,12 @@ class Router(RouterRigistry):
                         ) -> None:
         params, _ = sig_util.process_signature(handler)
 
-        async def wrapped_handler(req: Request):
-            _ret = wrapped_handler.ret
-            _params = wrapped_handler.params
-
-            final_status: int = 500
-            try:
-                try:
-                    kw = await sig_util.params_filter(_params, req)
-                except (ValueError, TypeError, KeyError, IndexError) as e:
-                    print(e)
-                    final_status = 422
-                    raise ZEITException(final_status, '422 Unprocessable entity')
-
-                result = await handler(**kw)
-
-                if _ret is not None:
-                    result = _ret(result)
-                str_result = result if isinstance(result, str) else json.dumps(result)
-                sver = _adapter.SERVER_VERSION
-                fres = (
-                    f"{sver} {status_code} {req.rid}\r\n"
-                    f"Content-Length: {len(str_result)}\r\n\r\n"
-                    f"{str_result}"
-                )
-                final_status = status_code
-            except ZEITException as zex:
-                fres = zex.get_fres(_adapter.SERVER_VERSION, req)
-                str_result = zex.get_body_result()
-                final_status = zex._status_code
-            except Exception:
-                traceback.print_exc()
-                final_status = 500
-                zex = ZEITException(final_status, '500 Internal server error')
-                fres = zex.get_fres(_adapter.SERVER_VERSION, req)
-                str_result = zex.get_body_result()
-
-            await send_payload(req.client_key, fres)
-            _adapter._log_request(req.method, req.target, final_status)
-
-        wrapped_handler.ret = response_model
-        wrapped_handler.params = params
+        wrapped_handler = WrappedEndpoint(
+            handler,
+            params,
+            response_model,
+            status_code,
+        )
 
         self._buff.append((method, target, wrapped_handler, ag, kw))
 

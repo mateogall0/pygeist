@@ -2,27 +2,30 @@ import asyncio
 import threading
 import os
 
-job_queue = asyncio.Queue()
-_loop = None
 
-async def worker():
-    while True:
-        func, args, kwargs = await job_queue.get()
-        try:
-            result = await func(*args, **kwargs)
-        except Exception as e:
-            print(f"Job failed: {e}")
-        finally:
-            job_queue.task_done()
+class WorkersQueue:
+    def __init__(self) -> None:
+        self.job_queue = None
+        self.loop = None
 
-def run_handler(func, *ag, **kw):
-    global _loop
-    asyncio.run_coroutine_threadsafe(job_queue.put((func, ag, kw)),
-                                     _loop)
+    def init(self, loop: asyncio.AbstractEventLoop):
+        self.loop = loop
+        self.job_queue = asyncio.Queue()
 
-def enqueue_fd(fd, handler):
-    return handler(fd)
+    async def worker(self,):
+        while True:
+            func, args, kwargs = await self.job_queue.get()
+            try:
+                result = await func(*args, **kwargs)
+            except Exception as e:
+                print(f"Job failed: {e}")
+            finally:
+                self.job_queue.task_done()
 
-def set_helper_loop(loop):
-    global _loop
-    _loop = loop
+    def run_handler(self, func, *ag, **kw):
+        asyncio.run_coroutine_threadsafe(
+            self.job_queue.put((func, ag, kw)),
+            self.loop,
+        )
+
+workers_queue = WorkersQueue()
