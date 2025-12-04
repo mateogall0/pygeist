@@ -61,13 +61,16 @@ class ZeitgeistAPI(_APIRouter):
             endpoints,
         )
 
-    async def _run(self,
-                   api_master: APIMaster,
-                   ) -> None:
-        loop = asyncio.get_event_loop()
+    async def _run(self, api_master: APIMaster) -> None:
+        loop = asyncio.get_running_loop()
         workers_queue.init(loop)
-        worker_tasks = [workers_queue.worker()
-                        for _ in range(self.workers)]
+
+        worker_tasks = [
+            loop.create_task(workers_queue.worker())
+            for _ in range(self.workers)
+        ]
+
+        await asyncio.sleep(0)
 
         await asyncio.gather(
             *worker_tasks,

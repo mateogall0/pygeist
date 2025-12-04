@@ -7,10 +7,15 @@ class WorkersQueue:
     def __init__(self) -> None:
         self.job_queue = None
         self.loop = None
+        self.start = False
+
 
     def init(self, loop: asyncio.AbstractEventLoop):
+        if self.start is True:
+            raise RuntimeError('workers queue already initialized')
         self.loop = loop
         self.job_queue = asyncio.Queue()
+        self.start = True
 
     async def worker(self,):
         while True:
@@ -23,9 +28,8 @@ class WorkersQueue:
                 self.job_queue.task_done()
 
     def run_handler(self, func, *ag, **kw):
-        asyncio.run_coroutine_threadsafe(
-            self.job_queue.put((func, ag, kw)),
-            self.loop,
+        self.loop.call_soon_threadsafe(
+            lambda: self.job_queue.put_nowait((func, ag, kw))
         )
 
 workers_queue = WorkersQueue()

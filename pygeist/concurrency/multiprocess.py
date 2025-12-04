@@ -2,10 +2,6 @@ from multiprocessing import Process, set_start_method
 import sys
 import signal
 from typing import Callable
-import platform
-
-
-set_start_method("fork", force=True)
 
 
 def multirunner(task: Callable,
@@ -13,7 +9,7 @@ def multirunner(task: Callable,
                 args=()) -> None:
     processes = []
     for _ in range(batch_size):
-        p = Process(target=task, daemon=True, args=args)
+        p = Process(target=task, daemon=False, args=args)
         p.start()
         processes.append(p)
 
@@ -31,7 +27,7 @@ def multirunner(task: Callable,
 def fork_proc(runner, *ag):
     proc = Process(target=runner,
                    args=ag,
-                   daemon=True)
+                   daemon=False)
     proc.start()
     return proc
 
